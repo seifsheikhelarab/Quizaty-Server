@@ -36,17 +36,26 @@
                     <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-start">
                         <span class="bg-indigo-100 text-indigo-700 font-black text-sm w-7 h-7 rounded-full flex items-center justify-center mr-3 shrink-0"><%= index + 1 %></span>
-                        <span class="pt-0.5"><%= question.questionText %></span>
+                        <span class="pt-0.5"><%= question.text %></span>
                     </h3>
                     
+                    <% if (question.imageUrl) { %>
+                        <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group/image">
+                            <img src="<%= question.imageUrl %>" alt="Question Image" class="w-full max-h-96 object-contain">
+                            <div class="absolute inset-0 bg-slate-900/0 group-hover/image:bg-slate-900/5 transition-colors"></div>
+                        </div>
+                    <% } %>
+                    
                     <div class="space-y-3">
-                        <% question.options.forEach((option, optIndex) => { %>
+                        <% question.shuffledOptions.forEach((option) => { %>
                             <label class="flex items-center p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
                                 <input type="radio" 
-                                       name="answers[<%= index %>]" 
-                                       value="<%= optIndex %>" 
+                                       name="answers[<%= question.id %>]" 
+                                       value="<%= option.originalIndex %>"
+                                       <% if (savedAnswers && savedAnswers[question.id] == option.originalIndex) { %>checked<% } %>
+                                       onchange="saveAnswer('<%= question.id %>')"
                                        class="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2 shrink-0">
-                                <span class="ml-3 text-slate-700 font-medium"><%= option %></span>
+                                <span class="ml-3 text-slate-700 font-medium"><%= option.text %></span>
                             </label>
                         <% }) %>
                     </div>
@@ -72,7 +81,7 @@
                 
                 initTimer() {
                     const startedAt = new Date('<%= submission.startedAt.toISOString() %>').getTime();
-                    const durationMs = <%= quiz.duration %> * 60 * 1000;
+                    const durationMs = Number('<%= quiz.duration %>') * 60 * 1000;
                     const endTime = startedAt + durationMs;
                     
                     const updateTimer = () => {
@@ -116,7 +125,79 @@
                     // Submit form naturally
                     document.getElementById('quizForm').submit();
                 }
-            }))
+            }));
+
+            // Auto-Save and Anti-cheating logic
+            const quizId = '<%= quiz.id %>';
+            const studentId = '<%= student.id %>';
+
+            window.saveAnswer = async function(questionId) {
+                const form = document.getElementById('quizForm');
+                const formData = new FormData(form);
+                const answers = {};
+                for (let [key, value] of formData.entries()) {
+                    if (key.startsWith('answers[')) {
+                        const qId = key.substring(8, key.length - 1);
+                        answers[qId] = value;
+                    }
+                }
+                
+                try {
+                    await fetch(`/quiz/${studentId}/${quizId}/save`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ answers })
+                    });
+                } catch(e) {
+                    console.error('Failed to save answer.', e);
+                }
+            };
+
+            const reportViolation = async (type, details = '') => {
+                try {
+                    await fetch(`/quiz/${studentId}/${quizId}/violation`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type, details })
+                    });
+                } catch (e) {
+                    console.error('Failed to report violation.', e);
+                }
+            };
+
+            // Anti-cheating listeners
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    reportViolation('TAB_SWITCH', 'Student switched tabs or minimized the browser.');
+                }
+            });
+
+            document.addEventListener('copy', (e) => {
+                e.preventDefault();
+                reportViolation('COPY_ATTEMPT');
+            });
+
+            document.addEventListener('paste', (e) => {
+                e.preventDefault();
+                reportViolation('PASTE_ATTEMPT');
+            });
+
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                reportViolation('RIGHT_CLICK', 'Student attempted to use right click.');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F12' || 
+                   (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
+                   (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
+                    e.preventDefault();
+                    reportViolation('DEV_TOOLS', 'Attempted key combo: ' + e.key);
+                }
+            });
+
+            // Prevent text selection
+            document.body.style.userSelect = 'none';
         });
     </script>
 </body>

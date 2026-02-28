@@ -2,7 +2,7 @@ import app from './app';
 import { initTelegramBot } from './services/telegram';
 import { initCronJobs } from './services/cron';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 7492;
 
 // Initialize background services
 initTelegramBot();

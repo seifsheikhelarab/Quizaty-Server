@@ -11,20 +11,25 @@ model Teacher {
   email     String   @unique
   password  String
   name      String?
+  phone     String?
   quizzes   Quiz[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  classes   Class[]
 }
 
 model Student {
   id          String       @id @default(cuid())
   name        String
   phone       String       @unique
-  groupName   String
   telegramId  String?      @unique
+  parentPhone String?
   submissions Submission[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  class       Class?       @relation(fields: [classId], references: [id])
+  classId     String?
+  password    String?
 }
 
 model Quiz {
@@ -39,6 +44,7 @@ model Quiz {
   teacher     Teacher      @relation(fields: [teacherId], references: [id])
   questions   Question[]
   submissions Submission[]
+  classes     Class[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -48,6 +54,7 @@ model Question {
   questionText  String
   options       String[] // Array of strings
   correctOption Int // Index of the correct option
+  imageUrl      String? // Optional image illustration
   quizId        String
   quiz          Quiz     @relation(fields: [quizId], references: [id])
 }
@@ -62,4 +69,16 @@ model Submission {
   submittedAt DateTime?
   score       Int       @default(0)
   answers     Json? // Optional: store student answers
+  violations  Json? // Optional: store cheating violations
+}
+
+model Class {
+  id        String    @id @default(cuid())
+  name      String
+  teacherId String
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+  students  Student[]
+  quizzes   Quiz[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }

@@ -1,220 +1,199 @@
-<nav class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 items-center">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: "Inter", sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <a
-                    href="/teacher/dashboard"
-                    class="text-2xl font-bold bg-white/20 p-2 rounded-lg"
-                    >🎓</a
-                >
-                <span class="text-xl font-bold tracking-tight"
-                    >QuizMaster Pro</span
-                >
+                <a href="/teacher/dashboard" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3">
+                        <svg class="w-5 h-5 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
+                    </div>
+                    <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
+                </a>
             </div>
+            
             <div class="flex items-center space-x-6">
-                <span class="text-sm font-medium opacity-80"
-                    >Welcome, <%= teacher.name %></span
-                >
-                <a
-                    href="/auth/logout"
-                    class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
-                    >Logout</a
-                >
+                <a href="/teacher/quizzes" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Quizzes
+                </a>
             </div>
         </div>
-    </div>
-</nav>
+    </header>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <div class="mb-10 flex justify-between items-end">
-        <div>
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
-                Create New Quiz
-            </h1>
-            <p class="text-slate-500 mt-2">
-                Set up your quiz details and add questions below.
-            </p>
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <div class="mb-8">
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Create Quiz</h2>
+            <p class="text-slate-500 mt-2 text-lg">Define the quiz settings and add your questions.</p>
         </div>
-    </div>
 
-    <form
-        action="/teacher/quizzes/create"
-        method="POST"
-        class="space-y-8"
-        x-data="{ 
-        questions: [{ text: '', options: ['', '', '', ''], correctOption: 0 }] 
-    }"
-    >
-        <!-- Basic Info -->
-        <div
-            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6"
-        >
-            <h2 class="text-xl font-bold text-slate-900 flex items-center">
-                <span
-                    class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm"
-                    >1</span
-                >
-                General Information
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="col-span-2">
-                    <label
-                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
-                        >Quiz Title</label
-                    >
-                    <input
-                        type="text"
-                        name="title"
-                        required
-                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    />
-                </div>
-                <div class="col-span-2">
-                    <label
-                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
-                        >Description</label
-                    >
-                    <textarea
-                        name="description"
-                        rows="3"
-                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    ></textarea>
-                </div>
-                <div>
-                    <label
-                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
-                        >Start Time</label
-                    >
-                    <input
-                        type="datetime-local"
-                        name="startTime"
-                        required
-                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    />
-                </div>
-                <div>
-                    <label
-                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
-                        >End Time</label
-                    >
-                    <input
-                        type="datetime-local"
-                        name="endTime"
-                        required
-                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    />
-                </div>
-                <div>
-                    <label
-                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
-                        >Duration (Minutes)</label
-                    >
-                    <input
-                        type="number"
-                        name="duration"
-                        required
-                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    />
-                </div>
-                <div>
-                    <label
-                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
-                        >Total Marks</label
-                    >
-                    <input
-                        type="number"
-                        name="totalMarks"
-                        required
-                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    />
+        <form action="/teacher/quizzes/create" method="POST" enctype="multipart/form-data" class="space-y-8">
+            
+            <!-- Quiz Details -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">General Details</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Quiz Title</label>
+                        <input type="text" name="title" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Description <span class="text-slate-400 font-normal">(Optional)</span></label>
+                        <textarea name="description" rows="3" class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Start Time</label>
+                            <input type="datetime-local" name="startTime" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 bg-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">End Time</label>
+                            <input type="datetime-local" name="endTime" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 bg-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Duration (minutes)</label>
+                            <input type="number" name="duration" min="1" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="e.g. 30">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Total Marks</label>
+                            <input type="number" name="totalMarks" min="1" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="e.g. 100">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-3">Assign to Classes</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <% classes.forEach(c => { %>
+                                <label class="relative flex items-start p-4 cursor-pointer outline-none rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors has-checked:border-indigo-600 has-checked:bg-indigo-50 has-checked:ring-1 has-checked:ring-indigo-600 select-none">
+                                    <div class="flex items-center h-5">
+                                        <input type="checkbox" name="classIds[]" value="<%= c.id %>" class="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <span class="font-bold text-slate-900 block"><%= c.name %></span>
+                                    </div>
+                                </label>
+                            <% }) %>
+                            <% if(classes.length === 0) { %>
+                                <p class="text-sm text-slate-500 col-span-full">No classes found. You can assign this later.</p>
+                            <% } %>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Questions Section -->
-        <div class="space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-slate-900 flex items-center">
-                    <span
-                        class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm"
-                        >2</span
-                    >
-                    Questions
-                </h2>
-                <button
-                    type="button"
-                    @click="questions.push({ text: '', options: ['', '', '', ''], correctOption: 0 })"
-                    class="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg transition-all"
-                >
-                    + Add More Question
+            <!-- Questions -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-slate-900">Questions</h3>
+                    <button type="button" onclick="addQuestion()" class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add Question
+                    </button>
+                </div>
+
+                <div id="questionsList" class="space-y-6">
+                    <!-- Questions injected here via JS -->
+                </div>
+                
+                <div id="noQuestionsFallback" class="hidden text-center py-6 text-slate-500 text-sm">
+                    No questions added. Click the button above to add one.
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-4 pb-12 space-x-4">
+                <a href="/teacher/quizzes" class="inline-flex items-center justify-center px-6 py-3 border border-slate-300 shadow-sm text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
+                    Save Quiz
                 </button>
             </div>
+        </form>
+    </main>
 
-            <template x-for="(question, index) in questions" :key="index">
-                <div
-                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6 relative overflow-hidden"
-                >
-                    <div
-                        class="absolute top-0 left-0 w-1 h-full bg-indigo-500"
-                    ></div>
-                    <div class="flex justify-between items-start">
-                        <label
-                            class="block text-sm font-bold text-slate-800 uppercase tracking-wider"
-                            >Question <span x-text="index + 1"></span
-                        ></label>
-                        <button
-                            type="button"
-                            @click="if(questions.length > 1) questions.splice(index, 1)"
-                            class="text-rose-500 hover:text-rose-700 text-sm font-bold"
-                        >
-                            Remove
+    <script>
+        let questionCount = 0;
+        const questionsList = document.getElementById('questionsList');
+        const fallbackMsg = document.getElementById('noQuestionsFallback');
+
+        function toggleFallback() {
+            if(questionsList.children.length === 0) {
+                fallbackMsg.classList.remove('hidden');
+            } else {
+                fallbackMsg.classList.add('hidden');
+            }
+        }
+
+        function addQuestion() {
+            const html = `
+                <div class="p-6 border border-slate-200 rounded-xl bg-slate-50 relative group transition-colors hover:border-indigo-300">
+                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" onclick="this.closest('.relative').remove(); toggleFallback();" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-md transition-colors" title="Remove Question">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
-                    <input
-                        type="text"
-                        :name="`questions[${index}][text]`"
-                        required
-                        x-model="question.text"
-                        placeholder="Enter question text..."
-                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                    />
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <template
-                            x-for="(option, optIndex) in question.options"
-                            :key="optIndex"
-                        >
-                            <div class="flex items-center space-x-3">
-                                <input
-                                    type="radio"
-                                    :name="`questions[${index}][correctOption]`"
-                                    :value="optIndex"
-                                    x-model="question.correctOption"
-                                    :checked="question.correctOption == optIndex"
-                                    class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-slate-300"
-                                />
-                                <input
-                                    type="text"
-                                    :name="`questions[${index}][options][]`"
-                                    required
-                                    x-model="question.options[optIndex]"
-                                    :placeholder="`Option ${optIndex + 1}`"
-                                    class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                />
-                            </div>
-                        </template>
+                    
+                    <div class="mb-5 pr-12">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Question Text</label>
+                        <input type="text" name="questions[${questionCount}][text]" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Illustration Image <span class="text-slate-400 font-normal">(Optional)</span></label>
+                        <input type="file" name="questions[${questionCount}][image]" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-white file:text-slate-700 file:border file:border-slate-300 hover:file:bg-slate-50 transition-colors">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 1</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 2</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 3</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 4</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Correct Answer</label>
+                        <select name="questions[${questionCount}][correctOption]" required class="block w-full md:w-1/2 border border-slate-300 bg-white rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="0">Option 1</option>
+                            <option value="1">Option 2</option>
+                            <option value="2">Option 3</option>
+                            <option value="3">Option 4</option>
+                        </select>
                     </div>
                 </div>
-            </template>
-        </div>
+            `;
+            questionsList.insertAdjacentHTML('beforeend', html);
+            questionCount++;
+            toggleFallback();
+        }
 
-        <div class="pt-8">
-            <button
-                type="submit"
-                class="w-full bg-indigo-600 text-white font-extrabold py-5 rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all text-lg tracking-wide uppercase"
-            >
-                Create Quiz & Save
-            </button>
-        </div>
-    </form>
-</main>
+        // Add first question automatically
+        document.addEventListener('DOMContentLoaded', () => {
+            addQuestion();
+        });
+    </script>
+</body>
+</html>

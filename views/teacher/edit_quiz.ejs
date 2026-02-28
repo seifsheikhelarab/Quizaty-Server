@@ -1,234 +1,243 @@
-<nav class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 items-center">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: "Inter", sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <a href="/teacher/dashboard" class="text-2xl font-bold bg-white/20 p-2 rounded-lg">🎓</a>
-                <span class="text-xl font-bold tracking-tight"><a href="/teacher/dashboard">QuizMaster Pro</a></span>
-            </div>
-            <div class="flex items-center space-x-6">
-                <span class="text-sm font-medium opacity-80">Welcome, <%= teacher.name %></span>
-                <a href="/auth/logout" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200">Logout</a>
-            </div>
-        </div>
-    </div>
-</nav>
-
-<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <div class="mb-8 flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Edit Quiz</h1>
-            <p class="text-slate-500 mt-2">Update the details and questions for this quiz.</p>
-        </div>
-        <a href="/teacher/quizzes" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Cancel
-        </a>
-    </div>
-
-    <form action="/teacher/quizzes/<%= quiz.id %>/edit" method="POST" id="quizForm" class="space-y-8">
-        <!-- Basic Settings -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-5 border-b border-slate-200 bg-slate-50">
-                <h3 class="text-lg font-bold text-slate-900">Basic Configuration</h3>
-            </div>
-            <div class="p-6 space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Quiz Title</label>
-                    <input type="text" name="title" required placeholder="e.g., Final Exam - Math 101" value="<%= quiz.title %>"
-                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
-                    <textarea name="description" rows="3" placeholder="Brief instructions for the students..."
-                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"><%= quiz.description %></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
-                        <input type="datetime-local" name="startTime" required 
-                            value="<%= new Date(quiz.startTime).toISOString().slice(0, 16) %>"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                <a href="/teacher/dashboard" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3">
+                        <svg class="w-5 h-5 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">End Time</label>
-                        <input type="datetime-local" name="endTime" required 
-                            value="<%= new Date(quiz.endTime).toISOString().slice(0, 16) %>"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Duration (minutes)</label>
-                        <div class="relative">
-                            <input type="number" name="duration" required min="1" placeholder="60" value="<%= quiz.duration %>"
-                                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow pl-10">
-                            <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Total Marks</label>
-                        <div class="relative">
-                            <input type="number" name="totalMarks" required min="1" placeholder="100" value="<%= quiz.totalMarks %>"
-                                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow pl-10">
-                            <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Questions Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-slate-900">Questions</h3>
-                <span id="questionCount" class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full"><%= quiz.questions.length %> Questions</span>
+                    <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
+                </a>
             </div>
             
-            <div class="p-6">
-                <div id="questionsContainer" class="space-y-8">
-                    <% quiz.questions.forEach((q, index) => { %>
-                    <!-- Existing Question Template -->
-                    <div class="question-card bg-white border border-slate-200 rounded-xl p-6 relative group hover:border-indigo-300 transition-colors">
-                        <button type="button" class="remove-btn absolute top-4 right-4 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Remove question">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                        
-                        <div class="flex items-center mb-4">
-                            <span class="q-number bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm mr-3 shadow-md"><%= index + 1 %></span>
-                            <div class="grow">
-                                <input type="text" name="questions[<%= index %>][text]" required placeholder="Enter the question text here..." value="<%= q.questionText %>"
-                                    class="w-full px-4 py-2 border-b-2 border-slate-200 focus:border-indigo-500 bg-transparent text-lg font-medium outline-none transition-colors">
-                            </div>
-                        </div>
+            <div class="flex items-center space-x-6">
+                <a href="/teacher/quizzes/<%= quiz.id %>" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Quiz
+                </a>
+            </div>
+        </div>
+    </header>
 
-                        <div class="pl-11 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <% for(let i=0; i<4; i++) { %>
-                            <div class="relative flex items-center">
-                                <input type="radio" name="questions[<%= index %>][correctOption]" value="<%= i %>" <%= q.correctOption === i ? 'checked' : '' %> required
-                                    class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
-                                <input type="text" name="questions[<%= index %>][options][]" required placeholder="Option <%= i + 1 %>" value="<%= q.options[i] %>"
-                                    class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                            </div>
-                            <% } %>
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <div class="mb-8">
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Edit Quiz: <%= quiz.title %></h2>
+            <p class="text-slate-500 mt-2 text-lg">Modify the settings and questions for this quiz.</p>
+        </div>
+
+        <form action="/teacher/quizzes/<%= quiz.id %>/edit" method="POST" enctype="multipart/form-data" class="space-y-8">
+            
+            <!-- Quiz Details -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">General Details</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Quiz Title</label>
+                        <input type="text" name="title" value="<%= quiz.title %>" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Description <span class="text-slate-400 font-normal">(Optional)</span></label>
+                        <textarea name="description" rows="3" class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"><%= quiz.description || '' %></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <% 
+                            const formatInputDate = (d) => {
+                                const dt = new Date(d);
+                                dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+                                return dt.toISOString().slice(0, 16);
+                            }
+                        %>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Start Time</label>
+                            <input type="datetime-local" name="startTime" value="<%= formatInputDate(quiz.startTime) %>" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 bg-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">End Time</label>
+                            <input type="datetime-local" name="endTime" value="<%= formatInputDate(quiz.endTime) %>" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 bg-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Duration (minutes)</label>
+                            <input type="number" name="duration" value="<%= quiz.duration %>" min="1" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Total Marks</label>
+                            <input type="number" name="totalMarks" value="<%= quiz.totalMarks %>" min="1" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         </div>
                     </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-3">Assign to Classes</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <% classes.forEach(c => { 
+                                const isAssigned = quiz.classes.some(qc => qc.id === c.id);
+                            %>
+                                <label class="relative flex items-start p-4 cursor-pointer outline-none rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors has-checked:border-indigo-600 has-checked:bg-indigo-50 has-checked:ring-1 has-checked:ring-indigo-600 select-none">
+                                    <div class="flex items-center h-5">
+                                        <input type="checkbox" name="classIds[]" value="<%= c.id %>" <%= isAssigned ? 'checked' : '' %> class="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <span class="font-bold text-slate-900 block"><%= c.name %></span>
+                                    </div>
+                                </label>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-slate-900">Questions</h3>
+                    <button type="button" onclick="addQuestion()" class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add Question
+                    </button>
+                </div>
+
+                <div id="questionsList" class="space-y-6">
+                    <% quiz.questions.forEach((q, index) => { %>
+                        <div class="p-6 border border-slate-200 rounded-xl bg-slate-50 relative group transition-colors hover:border-indigo-300">
+                            <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button type="button" onclick="this.closest('.relative').remove(); toggleFallback();" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-md transition-colors" title="Remove Question">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                            
+                            <div class="mb-5 pr-12">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Question Text</label>
+                                <input type="text" name="questions[<%= index %>][text]" value="<%= q.questionText %>" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            
+                            <div class="mb-5">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Illustration Image <span class="text-slate-400 font-normal">(Optional)</span></label>
+                                <% if(q.imageUrl) { %>
+                                    <div class="mb-2 text-sm text-indigo-600 font-medium flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        Current Image Uploaded
+                                    </div>
+                                <% } %>
+                                <input type="file" name="questions[<%= index %>][image]" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:text-sm file:font-bold file:bg-white file:text-slate-700 file:border file:border-slate-300 hover:file:bg-slate-50 transition-colors">
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                                <% q.options.forEach((opt, optIndex) => { %>
+                                    <div class="relative">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option <%= optIndex + 1 %></label>
+                                        <input type="text" name="questions[<%= index %>][options][]" value="<%= opt %>" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                <% }) %>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Correct Answer</label>
+                                <select name="questions[<%= index %>][correctOption]" required class="block w-full md:w-1/2 border border-slate-300 bg-white rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <option value="0" <%= q.correctOption === 0 ? 'selected' : '' %>>Option 1</option>
+                                    <option value="1" <%= q.correctOption === 1 ? 'selected' : '' %>>Option 2</option>
+                                    <option value="2" <%= q.correctOption === 2 ? 'selected' : '' %>>Option 3</option>
+                                    <option value="3" <%= q.correctOption === 3 ? 'selected' : '' %>>Option 4</option>
+                                </select>
+                            </div>
+                        </div>
                     <% }) %>
                 </div>
+                
+                <div id="noQuestionsFallback" class="<%= quiz.questions.length > 0 ? 'hidden' : '' %> text-center py-6 text-slate-500 text-sm">
+                    No questions added. Click the button above to add one.
+                </div>
+            </div>
 
-                <button type="button" id="addQuestionBtn" class="mt-6 w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-semibold hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Add Another Question
+            <div class="flex justify-end pt-4 pb-12 space-x-4">
+                <a href="/teacher/quizzes/<%= quiz.id %>" class="inline-flex items-center justify-center px-6 py-3 border border-slate-300 shadow-sm text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none shrink-0 shadow-sm transition-colors">
+                    Save Changes
                 </button>
             </div>
-        </div>
+        </form>
+    </main>
 
-        <div class="flex justify-end pt-4 pb-20">
-            <button type="submit" class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 hover:shadow-indigo-500/30 hover:-translate-y-0.5 transition-all duration-200 flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                Save Changes to Quiz
-            </button>
-        </div>
-    </form>
-</main>
+    <script>
+        let questionCount = <%= quiz.questions.length %>;
+        const questionsList = document.getElementById('questionsList');
+        const fallbackMsg = document.getElementById('noQuestionsFallback');
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('questionsContainer');
-        const addBtn = document.getElementById('addQuestionBtn');
-        const countBadge = document.getElementById('questionCount');
-        
-        let qCount = <%= quiz.questions.length %>;
-
-        function updateIndices() {
-            const cards = container.querySelectorAll('.question-card');
-            cards.forEach((card, idx) => {
-                card.querySelector('.q-number').textContent = idx + 1;
-                
-                const textInput = card.querySelector('input[type="text"][name$="[text]"]');
-                textInput.name = `questions[${idx}][text]`;
-                
-                const radios = card.querySelectorAll('input[type="radio"]');
-                radios.forEach(r => r.name = `questions[${idx}][correctOption]`);
-                
-                const optionInputs = card.querySelectorAll('input[type="text"][name*="[options]"]');
-                optionInputs.forEach(opt => opt.name = `questions[${idx}][options][]`);
-            });
-            countBadge.textContent = `${cards.length} Questions`;
+        function toggleFallback() {
+            if(questionsList.children.length === 0) {
+                fallbackMsg.classList.remove('hidden');
+            } else {
+                fallbackMsg.classList.add('hidden');
+            }
         }
 
-        container.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.remove-btn');
-            if(removeBtn) {
-                const cards = container.querySelectorAll('.question-card');
-                if(cards.length > 1) {
-                    removeBtn.closest('.question-card').remove();
-                    updateIndices();
-                } else {
-                    alert('A quiz must have at least one question.');
-                }
-            }
-        });
-
-        addBtn.addEventListener('click', () => {
-            const currentCount = container.querySelectorAll('.question-card').length;
-            const newIndex = currentCount;
-            
-            const template = `
-                <div class="question-card bg-white border border-slate-200 rounded-xl p-6 relative group hover:border-indigo-300 transition-colors opacity-0 translate-y-4 shadow-sm">
-                    <button type="button" class="remove-btn absolute top-4 right-4 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Remove question">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+        function addQuestion() {
+            const html = `
+                <div class="p-6 border border-slate-200 rounded-xl bg-slate-50 relative group transition-colors hover:border-indigo-300">
+                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" onclick="this.closest('.relative').remove(); toggleFallback();" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-white rounded-md transition-colors" title="Remove Question">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
                     
-                    <div class="flex items-center mb-4">
-                        <span class="q-number bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm mr-3 shadow-md">${newIndex + 1}</span>
-                        <div class="flex-grow">
-                            <input type="text" name="questions[${newIndex}][text]" required placeholder="Enter the question text here..."
-                                class="w-full px-4 py-2 border-b-2 border-slate-200 focus:border-indigo-500 bg-transparent text-lg font-medium outline-none transition-colors">
+                    <div class="mb-5 pr-12">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Question Text</label>
+                        <input type="text" name="questions[${questionCount}][text]" required class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Illustration Image <span class="text-slate-400 font-normal">(Optional)</span></label>
+                        <input type="file" name="questions[${questionCount}][image]" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-white file:text-slate-700 file:border file:border-slate-300 hover:file:bg-slate-50 transition-colors">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 1</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 2</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 3</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Option 4</label>
+                            <input type="text" name="questions[${questionCount}][options][]" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         </div>
                     </div>
-
-                    <div class="pl-11 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="relative flex items-center">
-                            <input type="radio" name="questions[${newIndex}][correctOption]" value="0" required
-                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
-                            <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 1"
-                                class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                        </div>
-                        <div class="relative flex items-center">
-                            <input type="radio" name="questions[${newIndex}][correctOption]" value="1" required
-                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
-                            <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 2"
-                                class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                        </div>
-                        <div class="relative flex items-center">
-                            <input type="radio" name="questions[${newIndex}][correctOption]" value="2" required
-                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
-                            <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 3"
-                                class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                        </div>
-                        <div class="relative flex items-center">
-                            <input type="radio" name="questions[${newIndex}][correctOption]" value="3" required
-                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
-                            <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 4"
-                                class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                        </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Correct Answer</label>
+                        <select name="questions[${questionCount}][correctOption]" required class="block w-full md:w-1/2 border border-slate-300 bg-white rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="0">Option 1</option>
+                            <option value="1">Option 2</option>
+                            <option value="2">Option 3</option>
+                            <option value="3">Option 4</option>
+                        </select>
                     </div>
                 </div>
             `;
-            
-            container.insertAdjacentHTML('beforeend', template);
-            updateIndices();
-            
-            // Animate entrance
-            requestAnimationFrame(() => {
-                const newNode = container.lastElementChild;
-                newNode.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-                newNode.classList.remove('opacity-0', 'translate-y-4');
-                newNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            });
-        });
-    });
-</script>
+            questionsList.insertAdjacentHTML('beforeend', html);
+            questionCount++;
+            toggleFallback();
+        }
+    </script>
+</body>
+</html>

@@ -24,7 +24,7 @@ export const initCronJobs = () => {
 
         for (const quiz of upcomingQuizzes) {
             for (const student of students) {
-                const baseUrl = `http://localhost:${process.env.PORT || 3000}`; // In production, use real URL
+                const baseUrl = `http://localhost:${process.env.PORT || 7492}`; // In production, use real URL
                 const text = `🔔 Upcoming Quiz!\n\nQuiz: ${quiz.title}\nStarts in: 10 minutes\nLink: ${baseUrl}/quiz/${student.id}/${quiz.id}`;
                 bot.telegram.sendMessage(student.telegramId!, text);
             }

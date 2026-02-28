@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body { font-family: "Inter", sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="/teacher/dashboard" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3">
+                        <svg class="w-5 h-5 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
+                    </div>
+                    <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
+                </a>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <a href="/teacher/classes" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Classes
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-slate-200">
+            <div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 mb-2">
+                    Class
+                </span>
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight"><%= classData.name %></h2>
+                <p class="text-slate-500 mt-2 text-sm">Manage students and view quizzes assigned to this class.</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                <a href="/teacher/classes/<%= classData.id %>/edit" class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                    Edit Class
+                </a>
+                <form action="/teacher/classes/<%= classData.id %>/delete" method="POST" onsubmit="return confirm('Delete this class entirely?');">
+                    <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 text-sm font-bold rounded-lg text-rose-600 bg-white hover:bg-rose-50 hover:border-rose-200 focus:outline-none transition-colors">
+                        Delete Class
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Students -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
+                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="text-lg font-bold text-slate-900">Students (<%= classData.students.length %>)</h3>
+                    </div>
+                    
+                    <!-- Add Student Form -->
+                    <div class="p-6 border-b border-slate-100 bg-white">
+                        <form action="/teacher/classes/<%= classData.id %>/students/add" method="POST" class="flex flex-col sm:flex-row gap-4">
+                            <div class="grow">
+                                <label class="sr-only" for="name">Name</label>
+                                <input type="text" name="name" id="name" placeholder="Student Name" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div class="grow">
+                                <label class="sr-only" for="phone">Student Phone</label>
+                                <input type="text" name="phone" id="phone" placeholder="Student Phone" required class="block w-full border border-slate-300 rounded-lg py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none shadow-sm transition-colors whitespace-nowrap">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Add
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="grow overflow-auto">
+                        <% if (classData.students.length === 0) { %>
+                            <div class="p-8 text-center text-slate-500 text-sm">
+                                No students added yet. Use the form above to add students.
+                            </div>
+                        <% } else { %>
+                            <ul class="divide-y divide-slate-100">
+                                <% classData.students.forEach(student => { %>
+                                    <li class="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-900"><%= student.name %></p>
+                                            <p class="text-xs text-slate-500 mt-0.5"><%= student.phone %></p>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <a href="/teacher/students/<%= student.id %>" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors">View</a>
+                                            <form action="/teacher/classes/<%= classData.id %>/students/<%= student.id %>/remove" method="POST" class="inline" onsubmit="return confirm('Remove student from class?');">
+                                                <button type="submit" class="text-slate-400 hover:text-rose-600 transition-colors p-1">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Quizzes -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50">
+                        <h3 class="text-lg font-bold text-slate-900">Assigned Quizzes (<%= classData.quizzes.length %>)</h3>
+                    </div>
+                    <div class="p-4">
+                        <% if (classData.quizzes.length === 0) { %>
+                            <div class="text-center text-slate-500 text-sm py-8">
+                                No quizzes assigned to this class yet.
+                            </div>
+                        <% } else { %>
+                            <div class="space-y-3">
+                                <% classData.quizzes.forEach(quiz => { %>
+                                    <a href="/teacher/quizzes/<%= quiz.id %>" class="block p-4 rounded-xl border border-slate-100 bg-white hover:border-indigo-200 hover:shadow-sm transition-all group">
+                                        <h4 class="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors"><%= quiz.title %></h4>
+                                        <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+                                            <span><%= quiz.duration %> mins</span>
+                                            <span><%= new Date(quiz.startTime).toLocaleDateString() %></span>
+                                        </div>
+                                    </a>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

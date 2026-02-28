@@ -20,3 +20,19 @@ export const authenticateTeacher = async (req: express.Request, res: express.Res
         res.redirect('/auth/login');
     }
 };
+
+export const authenticateStudent = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const token = req.cookies.token;
+    if (!token) return res.redirect('/auth/login');
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+        const student = await prisma.student.findUnique({ where: { id: decoded.id } });
+        if (!student) return res.redirect('/auth/login');
+        (req as any).student = student;
+        next();
+    } catch (error) {
+        res.clearCookie('token');
+        res.redirect('/auth/login');
+    }
+};

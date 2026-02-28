@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><%= title %></title>
+        <link href="/css/output.css" rel="stylesheet" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900"
+    >
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+            <div
+                class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between"
+            >
+                <div class="flex items-center space-x-3">
+                    <a
+                        href="/teacher/dashboard"
+                        class="flex items-center space-x-3"
+                    >
+                        <div
+                            class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3"
+                        >
+                            <svg
+                                class="w-5 h-5 text-white rotate-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 14l9-5-9-5-9 5 9 5z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h1
+                            class="text-xl font-black tracking-tight text-slate-900"
+                        >
+                            QuizMaster
+                        </h1>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <a
+                        href="/teacher/classes/<%= classData.id %>"
+                        class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center"
+                    >
+                        <svg
+                            class="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                            ></path>
+                        </svg>
+                        Back to Class
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-xl mx-auto px-6 py-12">
+            <div class="mb-8">
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight">
+                    Edit Class: <%= classData.name %>
+                </h2>
+                <p class="text-slate-500 mt-2 text-lg">
+                    Update the name for this class.
+                </p>
+            </div>
+
+            <form
+                action="/teacher/classes/<%= classData.id %>/edit"
+                method="POST"
+                class="space-y-6"
+            >
+                <div
+                    class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8"
+                >
+                    <div>
+                        <label
+                            for="name"
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Class Name</label
+                        >
+                        <input
+                            type="text"
+                            name="name"
+                            id="name"
+                            value="<%= classData.name %>"
+                            required
+                            class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <a
+                        href="/teacher/classes/<%= classData.id %>"
+                        class="inline-flex items-center justify-center px-6 py-3 border border-slate-300 shadow-sm text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-colors"
+                    >
+                        Cancel
+                    </a>
+                    <button
+                        type="submit"
+                        class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none flex-shrink-0 shadow-sm transition-colors"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </main>
+    </body>
+</html>
