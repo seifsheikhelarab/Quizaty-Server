@@ -38,3 +38,4 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 /prisma/migrations
 /.agents
 reqs.md
+public/css/output.css

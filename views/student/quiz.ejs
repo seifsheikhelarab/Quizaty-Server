@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900" 
+      x-data="quizTimer()" 
+      x-init="initTimer()">
+
+    <!-- Header Overlay -->
+    <div class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-50 shadow-sm transition-all duration-300">
+        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+            <h1 class="text-xl font-bold tracking-tight text-slate-900 truncate pr-4"><%= quiz.title %></h1>
+            <div class="flex items-center space-x-2 bg-slate-100 px-4 py-2 rounded-full border border-slate-200"
+                 :class="{'bg-rose-50 border-rose-200 text-rose-700': timeLeft < 60}">
+                <svg class="w-5 h-5 text-slate-500" :class="{'text-rose-500 animate-pulse': timeLeft < 60}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="font-mono font-bold tracking-wider" x-text="formattedTime"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-6 pt-28 pb-20">
+        <div class="mb-10 text-center">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-3"><%= quiz.title %></h2>
+            <p class="text-slate-500 max-w-2xl mx-auto leading-relaxed"><%= quiz.description %></p>
+        </div>
+
+        <form id="quizForm" action="/quiz/<%= student.id %>/<%= quiz.id %>/submit" method="POST" class="space-y-8 relative">
+            <% quiz.questions.forEach((question, index) => { %>
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-start">
+                        <span class="bg-indigo-100 text-indigo-700 font-black text-sm w-7 h-7 rounded-full flex items-center justify-center mr-3 shrink-0"><%= index + 1 %></span>
+                        <span class="pt-0.5"><%= question.questionText %></span>
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <% question.options.forEach((option, optIndex) => { %>
+                            <label class="flex items-center p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                                <input type="radio" 
+                                       name="answers[<%= index %>]" 
+                                       value="<%= optIndex %>" 
+                                       class="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2 shrink-0">
+                                <span class="ml-3 text-slate-700 font-medium"><%= option %></span>
+                            </label>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+
+            <div class="sticky bottom-6 mt-12 flex justify-center z-40">
+                <button type="submit" 
+                        class="bg-indigo-600 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-indigo-700 hover:shadow-xl hover:-translate-y-0.5 transition-all outline-none focus:ring-4 focus:ring-indigo-500/50 flex items-center group">
+                    <span>Submit Quiz</span>
+                    <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Timer Logic -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('quizTimer', () => ({
+                timeLeft: 0,
+                timer: null,
+                
+                initTimer() {
+                    const startedAt = new Date('<%= submission.startedAt.toISOString() %>').getTime();
+                    const durationMs = <%= quiz.duration %> * 60 * 1000;
+                    const endTime = startedAt + durationMs;
+                    
+                    const updateTimer = () => {
+                        const now = new Date().getTime();
+                        this.timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+                        
+                        if (this.timeLeft <= 0) {
+                            clearInterval(this.timer);
+                            this.autoSubmit();
+                        }
+                    };
+                    
+                    updateTimer(); // Initial call
+                    this.timer = setInterval(updateTimer, 1000);
+                },
+                
+                get formattedTime() {
+                    const minutes = Math.floor(this.timeLeft / 60);
+                    const seconds = this.timeLeft % 60;
+                    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                },
+                
+                autoSubmit() {
+                    // Prevent multiple submissions
+                    if (this.submitted) return;
+                    this.submitted = true;
+                    
+                    // Show a message to the user
+                    document.body.insertAdjacentHTML('beforeend', `
+                        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center">
+                            <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center transform animate-bounce-short">
+                                <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-900 mb-2">Time's Up!</h3>
+                                <p class="text-slate-500">Submitting your answers automatically...</p>
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Submit form naturally
+                    document.getElementById('quizForm').submit();
+                }
+            }))
+        });
+    </script>
+</body>
+</html>

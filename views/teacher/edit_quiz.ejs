@@ -104,11 +104,11 @@
                             </div>
                         </div>
 
-                        <div class="pl-11 grid grid-cols-2 gap-4">
+                        <div class="pl-11 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <% for(let i=0; i<4; i++) { %>
                             <div class="relative flex items-center">
                                 <input type="radio" name="questions[<%= index %>][correctOption]" value="<%= i %>" <%= q.correctOption === i ? 'checked' : '' %> required
-                                    class="peer w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
+                                    class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
                                 <input type="text" name="questions[<%= index %>][options][]" required placeholder="Option <%= i + 1 %>" value="<%= q.options[i] %>"
                                     class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                             </div>
@@ -190,28 +190,28 @@
                         </div>
                     </div>
 
-                    <div class="pl-11 grid grid-cols-2 gap-4">
+                    <div class="pl-11 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="relative flex items-center">
                             <input type="radio" name="questions[${newIndex}][correctOption]" value="0" required
-                                class="peer w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
+                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
                             <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 1"
                                 class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                         </div>
                         <div class="relative flex items-center">
                             <input type="radio" name="questions[${newIndex}][correctOption]" value="1" required
-                                class="peer w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
+                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
                             <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 2"
                                 class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                         </div>
                         <div class="relative flex items-center">
                             <input type="radio" name="questions[${newIndex}][correctOption]" value="2" required
-                                class="peer w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
+                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
                             <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 3"
                                 class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                         </div>
                         <div class="relative flex items-center">
                             <input type="radio" name="questions[${newIndex}][correctOption]" value="3" required
-                                class="peer w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
+                                class="peer w-5 h-5 shrink-0 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 ml-1 cursor-pointer">
                             <input type="text" name="questions[${newIndex}][options][]" required placeholder="Option 4"
                                 class="ml-3 w-full px-4 py-2 rounded-lg border border-slate-200 peer-checked:border-indigo-400 peer-checked:bg-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                         </div>
