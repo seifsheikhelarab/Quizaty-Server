@@ -1,0 +1,71 @@
+<nav class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex items-center space-x-3">
+                <a href="/teacher/dashboard" class="text-2xl font-bold bg-white/20 p-2 rounded-lg">🎓</a>
+                <span class="text-xl font-bold tracking-tight">QuizMaster Pro</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-sm font-medium opacity-80">Welcome, <%= teacher.name %></span>
+                <a href="/auth/logout" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="mb-10 flex justify-between items-end">
+        <div>
+            <div class="flex items-center space-x-3 mb-2">
+                <a href="/teacher/students" class="text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-widest text-xs font-bold flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Students
+                </a>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight"><%= student.name %>'s History</h1>
+            <p class="text-slate-500 mt-2">View past quiz submissions and scores.</p>
+        </div>
+        <div class="bg-white px-6 py-3 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-6">
+            <div>
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Submissions</p>
+                <p class="text-xl font-black text-indigo-600"><%= submissions.length %></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                    <tr>
+                        <th class="px-8 py-4">Quiz Title</th>
+                        <th class="px-8 py-4">Duration</th>
+                        <th class="px-8 py-4">Submitted At</th>
+                        <th class="px-8 py-4 text-right">Score</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <% submissions.forEach(sub => { %>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-6 font-semibold text-slate-900"><%= sub.quiz.title %></td>
+                        <td class="px-8 py-6 text-slate-600"><%= sub.quiz.duration %> mins</td>
+                        <td class="px-8 py-6 text-slate-600"><%= sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Incomplete' %></td>
+                        <td class="px-8 py-6 text-right">
+                            <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold <%= (sub.score / sub.quiz.totalMarks) >= 0.5 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' %>">
+                                <%= sub.score %> / <%= sub.quiz.totalMarks %>
+                            </span>
+                        </td>
+                    </tr>
+                    <% }) %>
+                    <% if (submissions.length === 0) { %>
+                    <tr>
+                        <td colspan="4" class="px-8 py-12 text-center text-slate-500">
+                            No quiz history found for this student.
+                        </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>

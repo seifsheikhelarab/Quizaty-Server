@@ -49,8 +49,9 @@
                         <td class="px-8 py-6 text-slate-600"><%= student.phone %></td>
                         <td class="px-8 py-6 text-slate-600"><%= student.groupName %></td>
                         <td class="px-8 py-6 text-slate-600"><%= new Date(student.createdAt).toLocaleDateString() %></td>
-                        <td class="px-8 py-6 text-right">
-                            <button class="text-rose-600 hover:text-rose-800 font-bold px-4 py-2 hover:bg-rose-50 rounded-lg transition-all">Delete</button>
+                        <td class="px-8 py-6 text-right flex justify-end space-x-2">
+                            <a href="/teacher/students/<%= student.id %>/history" class="text-indigo-600 hover:text-indigo-800 font-bold px-4 py-2 hover:bg-indigo-50 rounded-lg transition-all inline-block">History</a>
+                            <button class="text-rose-600 hover:text-rose-800 font-bold px-4 py-2 hover:bg-rose-50 rounded-lg transition-all inline-block">Delete</button>
                         </td>
                     </tr>
                     <% }) %>
