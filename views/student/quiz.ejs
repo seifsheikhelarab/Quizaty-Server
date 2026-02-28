@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= quiz.title %> | QuizMaster Student</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 overflow-x-hidden min-h-screen">
+    <!-- Sticky Header -->
+    <div class="bg-indigo-700 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-4xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold truncate max-w-[200px]"><%= quiz.title %></h1>
+                <p class="text-xs opacity-80"><%= student.name %> | <%= student.groupName %></p>
+            </div>
+            <div class="flex items-center space-x-4 bg-white/20 px-6 py-2 rounded-2xl backdrop-blur-sm" x-data="{ 
+                timeLeft: <%= Math.max(0, Math.floor((new Date(quiz.endTime).getTime() - new Date().getTime()) / 1000)) %>,
+                formatTime(s) {
+                    const m = Math.floor(s / 60);
+                    const sec = s % 60;
+                    return `${m}:${sec.toString().padStart(2, '0')}`;
+                }
+            }" x-init="setInterval(() => { 
+                if(timeLeft > 0) timeLeft--; 
+                else document.getElementById('quizForm').submit();
+            }, 1000)">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-2xl font-black font-mono tracking-tighter" x-text="formatTime(timeLeft)"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Quiz Content -->
+    <main class="max-w-4xl mx-auto px-6 py-10">
+        <form id="quizForm" action="/quiz/<%= student.id %>/<%= quiz.id %>/submit" method="POST" class="space-y-8">
+            <% quiz.questions.forEach((q, index) => { %>
+                <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100 relative group transition-all hover:shadow-md">
+                    <div class="absolute left-0 top-10 w-1.5 h-12 bg-indigo-500 rounded-r-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                    <p class="text-slate-400 font-bold text-sm mb-4 tracking-widest uppercase">Question <%= index + 1 %></p>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-8 leading-tight"><%= q.questionText %></h2>
+                    
+                    <div class="space-y-4">
+                        <% q.options.forEach((opt, optIdx) => { %>
+                            <label class="flex items-center p-5 rounded-2xl border-2 border-slate-50 bg-slate-50/50 hover:bg-white hover:border-indigo-200 cursor-pointer transition-all group/opt">
+                                <input type="radio" name="answers[<%= index %>]" value="<%= optIdx %>" required class="w-6 h-6 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                                <span class="ml-4 text-lg font-medium text-slate-600 group-hover/opt:text-indigo-700"><%= opt %></span>
+                            </label>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+
+            <div class="pt-10">
+                <button type="submit" class="w-full bg-indigo-600 text-white font-black py-6 rounded-3xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all text-xl tracking-wide uppercase flex items-center justify-center">
+                    Submit Quiz Now
+                    <svg class="w-6 h-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Progress Tracker (Optional Floating) -->
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl border border-white/20 hidden md:flex items-center space-x-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Progress</p>
+        <div class="flex space-x-1.5">
+            <% quiz.questions.forEach((_, idx) => { %>
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-200" :class="`q-dot-${idx}`"></div>
+            <% }) %>
+        </div>
+    </div>
+</body>
+</html>

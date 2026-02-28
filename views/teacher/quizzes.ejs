@@ -1,0 +1,89 @@
+<nav class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex items-center space-x-3">
+                <a href="/teacher/dashboard" class="text-2xl font-bold bg-white/20 p-2 rounded-lg">🎓</a>
+                <span class="text-xl font-bold tracking-tight">QuizMaster Pro</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-sm font-medium opacity-80">Welcome, <%= teacher.name %></span>
+                <a href="/auth/logout" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="mb-10 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Manage Quizzes</h1>
+            <p class="text-slate-500 mt-2">View and manage all your created quizzes.</p>
+        </div>
+        <a href="/teacher/quizzes/create" class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all duration-200 shadow-md">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Create New Quiz
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% quizzes.forEach(quiz => { %>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
+            <div class="p-8 flex-grow">
+                <div class="flex justify-between items-start mb-4">
+                    <% const now = new Date(); %>
+                    <% if (now < quiz.startTime) { %>
+                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Upcoming</span>
+                    <% } else if (now > quiz.endTime) { %>
+                        <span class="bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Ended</span>
+                    <% } else { %>
+                        <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Active</span>
+                    <% } %>
+                    <span class="text-slate-400 font-bold text-sm">#<%= quiz.id.slice(-4).toUpperCase() %></span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2"><%= quiz.title %></h3>
+                <p class="text-slate-500 text-sm line-clamp-2 mb-6"><%= quiz.description %></p>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center text-sm text-slate-600">
+                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        Starts: <%= new Date(quiz.startTime).toLocaleString() %>
+                    </div>
+                    <div class="flex items-center text-sm text-slate-600">
+                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Duration: <%= quiz.duration %> mins
+                    </div>
+                    <div class="flex items-center text-sm text-slate-600">
+                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        Questions: <%= quiz._count.questions %>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 p-6 flex justify-between items-center border-t border-slate-100">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <%= quiz._count.submissions %> Submissions
+                </div>
+                <div class="flex space-x-2">
+                    <button class="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <button class="p-2 text-slate-400 hover:text-rose-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+        <% if (quizzes.length === 0) { %>
+        <div class="col-span-full py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+            <div class="bg-indigo-50 p-4 rounded-full text-indigo-600 mb-4">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">No quizzes found</h3>
+            <p class="text-slate-500 max-w-xs mt-2 mx-auto">You haven't created any quizzes yet. Click the button below to start.</p>
+            <a href="/teacher/quizzes/create" class="mt-8 inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-md">
+                Create First Quiz
+            </a>
+        </div>
+        <% } %>
+    </div>
+</main>

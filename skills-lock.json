@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "express-typescript": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "computedHash": "77bf2fb3933e0487ba30d6269342d5b1ce02210f3aee892cd202e295b9fde99a"
+    },
+    "prisma-client-api": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "computedHash": "a982b2a15dc9d4223be7844f082e6481e1e24df1f379fbcf66b82d5b58e80bec"
+    },
+    "prisma-database-setup": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "computedHash": "72e2360923e949261a15ca1dbcfac5662ec5e851f6045ffb13163a55a083bcea"
+    }
+  }
+}

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Quiz Result | QuizMaster</title>
+        <link href="/css/output.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    </head>
+    <body
+        class="bg-slate-50 text-slate-900 min-h-screen flex items-center justify-center p-6"
+        x-data="{}"
+        x-init="confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#a855f7', '#ec4899'] })"
+    >
+        <div
+            class="max-w-2xl w-full bg-white rounded-[3rem] shadow-2xl p-12 border border-slate-100 text-center relative overflow-hidden"
+        >
+            <div
+                class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+            ></div>
+
+            <div class="mb-10">
+                <div
+                    class="w-32 h-32 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6"
+                >
+                    <span class="text-6xl">🏆</span>
+                </div>
+                <h1 class="text-4xl font-black text-slate-900 tracking-tight">
+                    Quiz Completed!
+                </h1>
+                <p class="text-slate-500 mt-3 text-lg">
+                    Well done,
+                    <span class="font-bold text-indigo-600"
+                        ><%= submission.student.name %></span
+                    >! You've finished the test.
+                </p>
+            </div>
+
+            <div
+                class="bg-slate-50 rounded-3xl p-10 mb-10 border border-slate-200/50"
+            >
+                <div class="grid grid-cols-2 gap-8">
+                    <div>
+                        <p
+                            class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1"
+                        >
+                            Your Score
+                        </p>
+                        <p class="text-5xl font-black text-indigo-600">
+                            <%= submission.score %>
+                        </p>
+                    </div>
+                    <div>
+                        <p
+                            class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1"
+                        >
+                            Total Marks
+                        </p>
+                        <p class="text-5xl font-black text-slate-300">
+                            <%= submission.quiz.totalMarks %>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-10 pt-8 border-t border-slate-200/50">
+                    <div
+                        class="flex justify-between items-center text-sm font-bold text-slate-500"
+                    >
+                        <span>Performance</span>
+                        <span
+                            ><%= Math.round((submission.score /
+                            submission.quiz.totalMarks) * 100) %>%</span
+                        >
+                    </div>
+                    <div
+                        class="w-full bg-slate-200 h-4 rounded-full mt-3 overflow-hidden"
+                    >
+                        <div
+                            class="bg-indigo-500 h-full rounded-full shadow-[0_0_15px_rgba(99,102,241,0.4)]"
+                            style="
+                                width: <%=
+                                    (
+                                        submission.score /
+                                            submission.quiz.totalMarks
+                                    ) *
+                                    100 %>%;
+                            "
+                        ></div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-sm text-slate-400 font-medium mb-10 italic">
+                Your results have also been sent to your linked Telegram
+                account.
+            </p>
+
+            <div class="flex flex-col space-y-4">
+                <button
+                    onclick="window.close()"
+                    class="w-full bg-slate-900 text-white font-bold py-5 rounded-2xl hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center"
+                >
+                    Close Window
+                </button>
+            </div>
+        </div>
+    </body>
+</html>

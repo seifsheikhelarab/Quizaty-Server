@@ -1,0 +1,220 @@
+<nav class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex items-center space-x-3">
+                <a
+                    href="/teacher/dashboard"
+                    class="text-2xl font-bold bg-white/20 p-2 rounded-lg"
+                    >🎓</a
+                >
+                <span class="text-xl font-bold tracking-tight"
+                    >QuizMaster Pro</span
+                >
+            </div>
+            <div class="flex items-center space-x-6">
+                <span class="text-sm font-medium opacity-80"
+                    >Welcome, <%= teacher.name %></span
+                >
+                <a
+                    href="/auth/logout"
+                    class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                    >Logout</a
+                >
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="mb-10 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
+                Create New Quiz
+            </h1>
+            <p class="text-slate-500 mt-2">
+                Set up your quiz details and add questions below.
+            </p>
+        </div>
+    </div>
+
+    <form
+        action="/teacher/quizzes/create"
+        method="POST"
+        class="space-y-8"
+        x-data="{ 
+        questions: [{ text: '', options: ['', '', '', ''], correctOption: 0 }] 
+    }"
+    >
+        <!-- Basic Info -->
+        <div
+            class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6"
+        >
+            <h2 class="text-xl font-bold text-slate-900 flex items-center">
+                <span
+                    class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm"
+                    >1</span
+                >
+                General Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="col-span-2">
+                    <label
+                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
+                        >Quiz Title</label
+                    >
+                    <input
+                        type="text"
+                        name="title"
+                        required
+                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+                <div class="col-span-2">
+                    <label
+                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
+                        >Description</label
+                    >
+                    <textarea
+                        name="description"
+                        rows="3"
+                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    ></textarea>
+                </div>
+                <div>
+                    <label
+                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
+                        >Start Time</label
+                    >
+                    <input
+                        type="datetime-local"
+                        name="startTime"
+                        required
+                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+                <div>
+                    <label
+                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
+                        >End Time</label
+                    >
+                    <input
+                        type="datetime-local"
+                        name="endTime"
+                        required
+                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+                <div>
+                    <label
+                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
+                        >Duration (Minutes)</label
+                    >
+                    <input
+                        type="number"
+                        name="duration"
+                        required
+                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+                <div>
+                    <label
+                        class="block text-sm font-semibold text-slate-700 uppercase tracking-wider"
+                        >Total Marks</label
+                    >
+                    <input
+                        type="number"
+                        name="totalMarks"
+                        required
+                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Section -->
+        <div class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center">
+                    <span
+                        class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm"
+                        >2</span
+                    >
+                    Questions
+                </h2>
+                <button
+                    type="button"
+                    @click="questions.push({ text: '', options: ['', '', '', ''], correctOption: 0 })"
+                    class="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg transition-all"
+                >
+                    + Add More Question
+                </button>
+            </div>
+
+            <template x-for="(question, index) in questions" :key="index">
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6 relative overflow-hidden"
+                >
+                    <div
+                        class="absolute top-0 left-0 w-1 h-full bg-indigo-500"
+                    ></div>
+                    <div class="flex justify-between items-start">
+                        <label
+                            class="block text-sm font-bold text-slate-800 uppercase tracking-wider"
+                            >Question <span x-text="index + 1"></span
+                        ></label>
+                        <button
+                            type="button"
+                            @click="if(questions.length > 1) questions.splice(index, 1)"
+                            class="text-rose-500 hover:text-rose-700 text-sm font-bold"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                    <input
+                        type="text"
+                        :name="`questions[${index}][text]`"
+                        required
+                        x-model="question.text"
+                        placeholder="Enter question text..."
+                        class="mt-2 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                    />
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <template
+                            x-for="(option, optIndex) in question.options"
+                            :key="optIndex"
+                        >
+                            <div class="flex items-center space-x-3">
+                                <input
+                                    type="radio"
+                                    :name="`questions[${index}][correctOption]`"
+                                    :value="optIndex"
+                                    x-model="question.correctOption"
+                                    :checked="question.correctOption == optIndex"
+                                    class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                                />
+                                <input
+                                    type="text"
+                                    :name="`questions[${index}][options][]`"
+                                    required
+                                    x-model="question.options[optIndex]"
+                                    :placeholder="`Option ${optIndex + 1}`"
+                                    class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                />
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div class="pt-8">
+            <button
+                type="submit"
+                class="w-full bg-indigo-600 text-white font-extrabold py-5 rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all text-lg tracking-wide uppercase"
+            >
+                Create Quiz & Save
+            </button>
+        </div>
+    </form>
+</main>
