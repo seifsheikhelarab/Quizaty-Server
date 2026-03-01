@@ -1,6 +1,6 @@
 import cron from 'node-cron';
-import prisma from '../prisma.ts';
-import { bot } from './telegram.ts';
+import prisma from '../prisma.js';
+import { bot } from './telegram.js';
 
 export const initCronJobs = () => {
     // Cron Job for Reminders (every minute)

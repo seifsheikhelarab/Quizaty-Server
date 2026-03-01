@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import prisma from '../prisma.ts';
-import { authenticateTeacher } from '../middleware.ts';
+import prisma from '../prisma.js';
+import { authenticateTeacher } from '../middleware.js';
 import multer from 'multer';
-import { storage } from '../utils/cloud_storage.ts';
+import { storage } from '../utils/cloud_storage.js';
 
 const router = Router();
 const upload = multer({ storage });

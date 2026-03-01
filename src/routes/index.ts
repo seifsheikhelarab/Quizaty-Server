@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import authRoutes from './auth.ts';
-import teacherRoutes from './teacher.ts';
-import quizRoutes from './quiz.ts';
-import studentRoutes from './student.ts';
+import authRoutes from './auth.js';
+import teacherRoutes from './teacher.js';
+import quizRoutes from './quiz.js';
+import studentRoutes from './student.js';
 
 const router = Router();
 

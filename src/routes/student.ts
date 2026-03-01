@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import prisma from '../prisma.ts';
-import { authenticateStudent } from '../middleware.ts';
+import prisma from '../prisma.js';
+import { authenticateStudent } from '../middleware.js';
 
 const router = Router();
 router.use(authenticateStudent);

@@ -4,8 +4,8 @@ import 'dotenv/config';
 import expressLayouts from 'express-ejs-layouts';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import router from './routes/index.ts';
-import { errorHandler } from './middleware/errorHandler.ts';
+import router from './routes/index.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
