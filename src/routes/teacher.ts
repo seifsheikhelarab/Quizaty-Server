@@ -2,9 +2,10 @@ import { Router } from 'express';
 import prisma from '../prisma';
 import { authenticateTeacher } from '../middleware';
 import multer from 'multer';
+import { storage } from '../utils/cloud_storage';
 
 const router = Router();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage });
 
 router.use(authenticateTeacher);
 
@@ -373,7 +374,7 @@ router.post('/quizzes/create', upload.any(), async (req, res) => {
                             questionText: q.text,
                             options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
                             correctOption: parseInt(q.correctOption),
-                            imageUrl: file ? `/uploads/${file.filename}` : null
+                            imageUrl: file ? file.path : null
                         };
                     })
                 }
@@ -533,7 +534,7 @@ router.post('/quizzes/:id/edit', upload.any(), async (req, res) => {
                             questionText: q.text,
                             options: q.options,
                             correctOption: parseInt(q.correctOption),
-                            imageUrl: file ? `/uploads/${file.filename}` : oldImageUrl
+                            imageUrl: file ? file.path : oldImageUrl
                         };
                     })
                 });
