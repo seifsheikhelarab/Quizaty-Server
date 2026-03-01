@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="/student/dashboard" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3">
+                        <svg class="w-5 h-5 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
+                    </div>
+                    <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
+                </a>
+                <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-md border border-indigo-100">Student</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="/student/dashboard" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Dashboard
+                </a>
+                <a href="/auth/logout" class="text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        <div class="mb-8">
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Quizzes</h2>
+            <p class="text-slate-500 mt-2 text-lg">All quizzes assigned to your classes.</p>
+        </div>
+
+        <% if (quizzes.length === 0) { %>
+            <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-3xl">📝</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">No quizzes</h3>
+                <p class="text-slate-500">No quizzes have been assigned to your classes yet.</p>
+            </div>
+        <% } else { %>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <% quizzes.forEach(quiz => { %>
+                    <% 
+                        const now = new Date();
+                        const startDate = new Date(quiz.startTime);
+                        const endDate = new Date(quiz.endTime);
+                        const isOpen = now >= startDate && now <= endDate;
+                        const isEnded = now > endDate;
+                        const isUpcoming = now < startDate;
+                        let statusText = isUpcoming ? 'Upcoming' : (isOpen ? 'Open' : 'Ended');
+                        let statusColor = isUpcoming ? 'bg-amber-100 text-amber-800' : (isOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-800');
+                        const sub = submissionMap[quiz.id];
+                        const hasSubmitted = sub && sub.submittedAt;
+                        const scoreReleased = isEnded;
+                    %>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col hover:shadow-md hover:border-indigo-300 transition-all">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= statusColor %> mb-3"><%= statusText %></span>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1"><%= quiz.title %></h3>
+                        <% if (quiz.description) { %>
+                            <p class="text-sm text-slate-500 mb-3 line-clamp-2"><%= quiz.description %></p>
+                        <% } %>
+                        <div class="text-sm text-slate-500 mb-2">
+                            <%= startDate.toLocaleDateString() %> - <%= endDate.toLocaleDateString() %>
+                        </div>
+                        <p class="text-xs font-medium text-indigo-600 mb-4"><%= quiz.teacher.name || 'Teacher' %></p>
+                        
+                        <div class="flex flex-wrap gap-2 mt-auto pt-4 border-t border-slate-100">
+                            <a href="/student/quizzes/<%= quiz.id %>" class="inline-flex items-center justify-center px-3 py-2 border border-slate-300 text-xs font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                                Show Details
+                            </a>
+                            <% if (scoreReleased && hasSubmitted) { %>
+                                <a href="/quiz/<%= student.id %>/<%= quiz.id %>/result" class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                                    View Submission
+                                </a>
+                            <% } %>
+                            <% if (isOpen && !hasSubmitted) { %>
+                                <a href="/quiz/<%= student.id %>/<%= quiz.id %>" class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-bold rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
+                                    Attempt Quiz
+                                </a>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </main>
+</body>
+</html>

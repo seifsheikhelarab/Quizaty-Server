@@ -42,13 +42,15 @@
                 const scoreColor = submission.score >= (quiz.totalMarks / 2) ? 'text-emerald-600' : 'text-rose-600';
                 
                 let answers = {};
-                let violations = {};
-                try {
-                    if (submission.answers) answers = JSON.parse(submission.answers);
-                    if (submission.violations) violations = JSON.parse(submission.violations);
-                } catch(e) {}
-                
-                const hasViolations = Object.keys(violations).length > 0;
+                if (submission.answers) {
+                    answers = typeof submission.answers === 'string' ? JSON.parse(submission.answers) : submission.answers;
+                }
+                let violationsRaw = submission.violations;
+                if (typeof violationsRaw === 'string') {
+                    try { violationsRaw = JSON.parse(violationsRaw); } catch(e) {}
+                }
+                const violationsList = Array.isArray(violationsRaw) ? violationsRaw : (violationsRaw && typeof violationsRaw === 'object' ? Object.entries(violationsRaw).map(([k,v]) => ({ type: k, details: v })) : []);
+                const hasViolations = violationsList.length > 0;
             %>
             
             <div class="mt-4 flex flex-wrap gap-4 text-sm text-slate-500 font-medium">
@@ -71,15 +73,12 @@
             <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-5 mb-8 flex items-start shadow-sm">
                 <svg class="w-6 h-6 text-amber-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 <div>
-                    <h3 class="text-amber-800 font-bold mb-1">Testing Violations Detected</h3>
+                    <h3 class="text-amber-800 font-bold mb-1">Violations Detected</h3>
                     <p class="text-amber-700 text-sm mb-3">This student triggered cheating prevention checks during the quiz.</p>
                     <ul class="list-disc list-inside text-sm text-amber-800 font-medium space-y-1">
-                        <% if(violations.unfocusedTimes) { %>
-                            <li>Loss of focus (switching tabs/apps): <%= violations.unfocusedTimes %> times</li>
-                        <% } %>
-                        <% if(violations.fullscreenExits) { %>
-                            <li>Exited fullscreen mode: <%= violations.fullscreenExits %> times</li>
-                        <% } %>
+                        <% violationsList.forEach(v => { %>
+                            <li><%= v.type %>: <%= typeof v.details === 'object' ? JSON.stringify(v.details) : v.details %></li>
+                        <% }) %>
                     </ul>
                 </div>
             </div>

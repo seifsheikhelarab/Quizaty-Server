@@ -55,8 +55,8 @@ router.get('/classes', async (req, res) => {
     try {
         const classes = await prisma.class.findMany({
             where: { teacherId: teacher.id },
-            include: { _count: { select: { students: true, quizzes: true } } },
-            orderBy: { createdAt: 'desc' }
+            include: { _count: { select: { students: true } } },
+            orderBy: { name: 'asc' }
         });
         res.render('teacher/classes', { title: 'Manage Classes', teacher, classes });
     } catch (error) {
@@ -72,19 +72,37 @@ router.get('/classes/create', async (req, res) => {
 
 router.post('/classes/create', async (req, res) => {
     const teacher = (req as any).teacher;
-    const { name } = req.body;
+    const { name, description, studentPhones } = req.body;
 
     if (!name || name.trim() === '') {
         return res.status(400).send("Class name is required.");
     }
 
     try {
-        await prisma.class.create({
+        const classData = await prisma.class.create({
             data: {
                 name: name.trim(),
+                description: description?.trim() || null,
                 teacherId: teacher.id
             }
         });
+
+        if (studentPhones && typeof studentPhones === 'string') {
+            const phones = studentPhones.split('\n').map((p: string) => p.trim()).filter(Boolean);
+            for (const phone of phones) {
+                let student = await prisma.student.findUnique({ where: { phone } });
+                if (student) {
+                    await prisma.student.update({
+                        where: { id: student.id },
+                        data: { classId: classData.id }
+                    });
+                } else {
+                    await prisma.student.create({
+                        data: { name: 'Student', phone, classId: classData.id }
+                    });
+                }
+            }
+        }
         res.redirect('/teacher/classes');
     } catch (error) {
         console.error("Error creating class:", error);
@@ -139,7 +157,7 @@ router.get('/classes/:id/edit', async (req, res) => {
 router.post('/classes/:id/edit', async (req, res) => {
     const teacher = (req as any).teacher;
     const classId = req.params.id;
-    const { name } = req.body;
+    const { name, description } = req.body;
 
     if (!name || name.trim() === '') {
         return res.status(400).send("Class name is required.");
@@ -148,7 +166,10 @@ router.post('/classes/:id/edit', async (req, res) => {
     try {
         await prisma.class.update({
             where: { id: classId, teacherId: teacher.id },
-            data: { name: name.trim() }
+            data: {
+                name: name.trim(),
+                description: description?.trim() || null
+            }
         });
         res.redirect(`/teacher/classes/${classId}`);
     } catch (error) {
@@ -247,6 +268,7 @@ router.get('/students/:id', async (req, res) => {
             include: {
                 class: true,
                 submissions: {
+                    where: { quiz: { teacherId: teacher.id } },
                     include: { quiz: true },
                     orderBy: { submittedAt: 'desc' }
                 }
@@ -255,14 +277,10 @@ router.get('/students/:id', async (req, res) => {
 
         if (!student) return res.status(404).send('Student not found');
 
-        // Calculate analysis
+        // Calculate analysis: best score, worst score, average score (per doc)
         let bestScore: number | null = null;
         let worstScore: number | null = null;
         let totalScorePercentage = 0;
-
-        let bestTime: number | null = null;
-        let worstTime: number | null = null;
-        let totalTime = 0;
         let validSubmissionsCount = 0;
 
         student.submissions.forEach(sub => {
@@ -271,12 +289,6 @@ router.get('/students/:id', async (req, res) => {
                 if (bestScore === null || percentage > bestScore) bestScore = percentage;
                 if (worstScore === null || percentage < worstScore) worstScore = percentage;
                 totalScorePercentage += percentage;
-
-                const timeTakenMins = (sub.submittedAt.getTime() - sub.startedAt.getTime()) / 60000;
-                if (bestTime === null || timeTakenMins < bestTime) bestTime = timeTakenMins;
-                if (worstTime === null || timeTakenMins > worstTime) worstTime = timeTakenMins;
-                totalTime += timeTakenMins;
-
                 validSubmissionsCount++;
             }
         });
@@ -284,10 +296,7 @@ router.get('/students/:id', async (req, res) => {
         const analysis = {
             bestScore: bestScore !== null ? (bestScore as number).toFixed(1) + '%' : 'N/A',
             worstScore: worstScore !== null ? (worstScore as number).toFixed(1) + '%' : 'N/A',
-            avgScore: validSubmissionsCount > 0 ? (totalScorePercentage / validSubmissionsCount).toFixed(1) + '%' : 'N/A',
-            bestTime: bestTime !== null ? (bestTime as number).toFixed(1) + 'm' : 'N/A',
-            worstTime: worstTime !== null ? (worstTime as number).toFixed(1) + 'm' : 'N/A',
-            avgTime: validSubmissionsCount > 0 ? (totalTime / validSubmissionsCount).toFixed(1) + 'm' : 'N/A'
+            avgScore: validSubmissionsCount > 0 ? (totalScorePercentage / validSubmissionsCount).toFixed(1) + '%' : 'N/A'
         };
 
         res.render('teacher/student_details', { title: student.name, teacher, student, analysis });
@@ -342,6 +351,8 @@ router.post('/quizzes/create', upload.any(), async (req, res) => {
         }
     }
 
+    const questionsArr = Array.isArray(questions) ? questions : (questions ? Object.values(questions as object) : []);
+
     try {
         await prisma.quiz.create({
             data: {
@@ -356,15 +367,15 @@ router.post('/quizzes/create', upload.any(), async (req, res) => {
                     connect: selectedClasses
                 },
                 questions: {
-                    create: questions ? questions.map((q: any, i: number) => {
+                    create: questionsArr.map((q: any, i: number) => {
                         const file = files?.find(f => f.fieldname === `questions[${i}][image]`);
                         return {
                             questionText: q.text,
-                            options: q.options,
+                            options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
                             correctOption: parseInt(q.correctOption),
                             imageUrl: file ? `/uploads/${file.filename}` : null
                         };
-                    }) : []
+                    })
                 }
             }
         });
@@ -442,8 +453,9 @@ router.get('/quizzes/:id', async (req, res) => {
             return timeA - timeB;
         }).slice(0, 3);
 
+        const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 7492}`;
         res.render('teacher/quiz_details', {
-            title: quiz.title, teacher, quiz, analysis, leaderboard, submissions: completedSubmissions
+            title: quiz.title, teacher, quiz, analysis, leaderboard, submissions: completedSubmissions, baseUrl
         });
     } catch (error) {
         console.error("Error fetching quiz details:", error);
@@ -562,26 +574,7 @@ router.post('/quizzes/:id/release-results', async (req, res) => {
         const quiz = await prisma.quiz.findUnique({ where: { id: quizId, teacherId: teacher.id } });
         if (!quiz) return res.status(404).send('Quiz not found');
 
-        const submissions = await prisma.submission.findMany({
-            where: { quizId }, include: { student: true }
-        });
-
-        const baseUrl = `http://localhost:${process.env.PORT || 7492}`;
-        let sentCount = 0;
-
-        for (const sub of submissions) {
-            if (sub.student.telegramId && sub.submittedAt) {
-                const text = `📊 Quiz Results are out!\n\nQuiz: ${quiz.title}\nScore: ${sub.score}/${quiz.totalMarks}\n\nView details: ${baseUrl}/quiz/${sub.student.id}/${quiz.id}/result`;
-                try {
-                    const { bot } = await import('../services/telegram');
-                    await bot.telegram.sendMessage(sub.student.telegramId, text);
-                    sentCount++;
-                } catch (err) {
-                    console.error(`Failed to send result to student ${sub.student.id}`, err);
-                }
-            }
-        }
-        res.redirect(`/teacher/quizzes/${quizId}?sent=${sentCount}`);
+        res.redirect(`/teacher/quizzes/${quizId}?released=1`);
     } catch (error) {
         console.error("Error releasing results:", error);
         res.status(500).send('Error releasing results');

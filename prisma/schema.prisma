@@ -73,9 +73,10 @@ model Submission {
 }
 
 model Class {
-  id        String    @id @default(cuid())
-  name      String
-  teacherId String
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  teacherId   String
   teacher   Teacher   @relation(fields: [teacherId], references: [id])
   students  Student[]
   quizzes   Quiz[]

@@ -151,12 +151,15 @@ router.get('/:studentId/:quizId/result', async (req, res) => {
     const { studentId, quizId } = req.params;
     const submission = await prisma.submission.findFirst({
         where: { studentId, quizId },
-        include: { quiz: true, student: true }
+        include: {
+            quiz: { include: { questions: { orderBy: { id: 'asc' } } } },
+            student: true
+        }
     });
 
     if (!submission) throw new NotFoundError('Submission');
 
-    res.render('student/result', { title: 'Result', submission, layout: false });
+    res.render('student/result', { title: 'Submission Details', submission, layout: false });
 });
 
 export default router;

@@ -94,20 +94,35 @@
                 <div
                     class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8"
                 >
-                    <div>
-                        <label
-                            for="name"
-                            class="block text-sm font-bold text-slate-700 mb-2"
-                            >Class Name</label
-                        >
-                        <input
-                            type="text"
-                            name="name"
-                            id="name"
-                            value="<%= classData.name %>"
-                            required
-                            class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        />
+                    <div class="space-y-6">
+                        <div>
+                            <label
+                                for="name"
+                                class="block text-sm font-bold text-slate-700 mb-2"
+                                >Class Name</label
+                            >
+                            <input
+                                type="text"
+                                name="name"
+                                id="name"
+                                value="<%= classData.name %>"
+                                required
+                                class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label
+                                for="description"
+                                class="block text-sm font-bold text-slate-700 mb-2"
+                                >Class Description <span class="text-slate-400 font-normal">(Optional)</span></label
+                            >
+                            <textarea
+                                name="description"
+                                id="description"
+                                rows="3"
+                                class="block w-full border border-slate-300 rounded-lg py-2.5 px-4 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            ><%= classData.description || '' %></textarea>
+                        </div>
                     </div>
                 </div>
 

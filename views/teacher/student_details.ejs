@@ -53,42 +53,21 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            <!-- Score Analysis -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6">Score Analysis</h3>
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="text-center">
-                        <p class="text-3xl font-black text-emerald-600"><%= analysis.bestScore %></p>
-                        <p class="text-xs font-medium text-slate-500 mt-1">Best</p>
-                    </div>
-                    <div class="text-center border-l border-r border-slate-100">
-                        <p class="text-3xl font-black text-slate-900"><%= analysis.avgScore %></p>
-                        <p class="text-xs font-medium text-slate-500 mt-1">Average</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-3xl font-black text-rose-600"><%= analysis.worstScore %></p>
-                        <p class="text-xs font-medium text-slate-500 mt-1">Worst</p>
-                    </div>
+        <!-- Quiz Attempts Analysis: best score, worst score, average score (per doc) -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-10">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6">Quiz Attempts Analysis</h3>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <p class="text-3xl font-black text-emerald-600"><%= analysis.bestScore %></p>
+                    <p class="text-xs font-medium text-slate-500 mt-1">Best Score</p>
                 </div>
-            </div>
-
-            <!-- Time Analysis -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6">Time Analysis</h3>
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="text-center">
-                        <p class="text-3xl font-black text-emerald-600"><%= analysis.bestTime %></p>
-                        <p class="text-xs font-medium text-slate-500 mt-1">Fastest</p>
-                    </div>
-                    <div class="text-center border-l border-r border-slate-100">
-                        <p class="text-3xl font-black text-slate-900"><%= analysis.avgTime %></p>
-                        <p class="text-xs font-medium text-slate-500 mt-1">Average</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-3xl font-black text-rose-600"><%= analysis.worstTime %></p>
-                        <p class="text-xs font-medium text-slate-500 mt-1">Slowest</p>
-                    </div>
+                <div class="text-center border-l border-r border-slate-100">
+                    <p class="text-3xl font-black text-slate-900"><%= analysis.avgScore %></p>
+                    <p class="text-xs font-medium text-slate-500 mt-1">Average Score</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-black text-rose-600"><%= analysis.worstScore %></p>
+                    <p class="text-xs font-medium text-slate-500 mt-1">Worst Score</p>
                 </div>
             </div>
         </div>

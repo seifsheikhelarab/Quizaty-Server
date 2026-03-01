@@ -70,7 +70,7 @@
                         let statusText = '';
                         let statusColor = '';
                         
-                        // Status logic based on requirments (upcoming, active, ended)
+                        // Status: open, ended, upcoming (per doc)
                         if (now < startDate) {
                             statusText = 'Upcoming';
                             statusColor = 'bg-amber-100 text-amber-800';
@@ -78,7 +78,7 @@
                             statusText = 'Ended';
                             statusColor = 'bg-slate-100 text-slate-800';
                         } else {
-                            statusText = 'Active';
+                            statusText = 'Open';
                             statusColor = 'bg-emerald-100 text-emerald-800';
                         }
                     %>
@@ -87,41 +87,34 @@
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= statusColor %>">
                                 <%= statusText %>
                             </span>
-                            <form action="/teacher/quizzes/<%= quiz.id %>/delete" method="POST" onsubmit="return confirm('Delete this quiz entirely?');">
-                                <button type="submit" class="text-slate-400 hover:text-rose-600 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </form>
                         </div>
                         
                         <h3 class="text-xl font-bold text-slate-900 mb-1"><%= quiz.title %></h3>
+                        <% if (quiz.description) { %>
+                            <p class="text-sm text-slate-500 mb-2 line-clamp-2"><%= quiz.description %></p>
+                        <% } %>
                         
                         <div class="text-sm text-slate-500 mb-6 grow">
                             <div class="flex items-center mt-2">
                                 <svg class="w-4 h-4 mr-1.5 min-w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                <%= startDate.toLocaleDateString() %>, <%= startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
-                            </div>
-                            <div class="flex items-center mt-1">
-                                <svg class="w-4 h-4 mr-1.5 min-w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <%= quiz.duration %> mins
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 mb-5 pt-5 border-t border-slate-100">
-                            <div>
-                                <p class="text-xs font-semibold text-slate-400 uppercase">Questions</p>
-                                <p class="text-lg font-bold text-slate-900"><%= quiz._count.questions %></p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-semibold text-slate-400 uppercase">Submissions</p>
-                                <p class="text-lg font-bold text-slate-900"><%= quiz._count.submissions %></p>
+                                <%= startDate.toLocaleDateString() %> - <%= endDate.toLocaleDateString() %>
                             </div>
                         </div>
 
-                        <div class="w-full">
-                            <a href="/teacher/quizzes/<%= quiz.id %>" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
-                                View Quiz Details
+                        <div class="flex flex-wrap gap-2">
+                            <a href="/teacher/quizzes/<%= quiz.id %>" class="inline-flex items-center justify-center px-3 py-2 border border-slate-300 text-xs font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                                Show Details
                             </a>
+                            <a href="/teacher/quizzes/<%= quiz.id %>#submissions" class="inline-flex items-center justify-center px-3 py-2 border border-slate-300 text-xs font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                                View Submissions
+                            </a>
+                            <% if (now < startDate) { %>
+                            <form action="/teacher/quizzes/<%= quiz.id %>/delete" method="POST" onsubmit="return confirm('Delete this quiz entirely?');" class="inline">
+                                <button type="submit" class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-bold rounded-lg text-rose-700 bg-rose-50 hover:bg-rose-100 transition-colors">
+                                    Delete
+                                </button>
+                            </form>
+                            <% } %>
                         </div>
                     </div>
                 <% }) %>
