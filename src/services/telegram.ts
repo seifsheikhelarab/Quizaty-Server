@@ -1,5 +1,5 @@
 import { Telegraf } from 'telegraf';
-import prisma from '../prisma';
+import prisma from '../prisma.ts';
 
 export const bot = new Telegraf(process.env.telegram_token!);
 

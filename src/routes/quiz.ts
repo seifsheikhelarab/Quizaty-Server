@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import prisma from '../prisma';
-import { NotFoundError, BadRequestError } from '../utils/errors';
-import { seededShuffle } from '../utils/shuffle';
+import prisma from '../prisma.ts';
+import { NotFoundError, BadRequestError } from '../utils/errors.ts';
+import { seededShuffle } from '../utils/shuffle.ts';
 
 const router = Router();
 

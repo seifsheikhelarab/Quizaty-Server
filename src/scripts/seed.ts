@@ -1,5 +1,5 @@
 import "dotenv/config";
-import prisma from "../prisma";
+import prisma from "../prisma.ts";
 import bcrypt from "bcrypt";
 import { faker } from "@faker-js/faker";
 
