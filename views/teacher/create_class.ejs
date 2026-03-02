@@ -6,27 +6,27 @@
         <title><%= title %></title>
         <link href="/css/output.css" rel="stylesheet" />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap"
             rel="stylesheet"
         />
         <style>
             body {
-                font-family: "Inter", sans-serif;
+                font-family: "Cairo", sans-serif;
             }
         </style>
     </head>
     <body
-        class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900"
+        class="bg-slate-50 min-h-screen text-slate-800 selection:bg-indigo-100 selection:text-indigo-900"
     >
         <!-- Header -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
             <div
                 class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between"
             >
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-3 space-x-reverse">
                     <a
                         href="/teacher/dashboard"
-                        class="flex items-center space-x-3"
+                        class="flex items-center space-x-3 space-x-reverse"
                     >
                         <div
                             class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3"
@@ -53,13 +53,13 @@
                     </a>
                 </div>
 
-                <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-6 space-x-reverse">
                     <a
                         href="/teacher/classes"
                         class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center"
                     >
                         <svg
-                            class="w-4 h-4 mr-1"
+                            class="w-4 h-4 ml-1 rotate-180"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -71,19 +71,19 @@
                                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
                             ></path>
                         </svg>
-                        Back to Classes
+                        العودة للفصول
                     </a>
                 </div>
             </div>
         </header>
 
         <main class="max-w-xl mx-auto px-6 py-12">
-            <div class="mb-8">
+            <div class="mb-8 text-right">
                 <h2 class="text-3xl font-black text-slate-900 tracking-tight">
-                    Create New Class
+                    إنشاء فصل جديد
                 </h2>
                 <p class="text-slate-500 mt-2 text-lg">
-                    Set up a new class to organize your students.
+                    قم بإعداد فصل جديد لتنظيم طلابك.
                 </p>
             </div>
 
@@ -96,68 +96,75 @@
                     class="p-8"
                 >
                     <div class="space-y-6">
-                        <div>
+                        <div class="text-right">
                             <label
                                 for="name"
                                 class="block text-sm font-bold text-slate-700 mb-2"
-                                >Class Name</label
+                                >اسم الفصل</label
                             >
                             <input
                                 type="text"
                                 name="name"
                                 id="name"
                                 required
-                                class="block w-full border border-slate-300 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="e.g. Grade 10 Math"
+                                class="block w-full border border-slate-300 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-right"
+                                placeholder="مثال: رياضيات الصف العاشر"
                             />
                         </div>
-                        <div>
+                        <div class="text-right">
                             <label
                                 for="description"
                                 class="block text-sm font-bold text-slate-700 mb-2"
-                                >Class Description <span class="text-slate-400 font-normal">(Optional)</span></label
+                                >وصف الفصل
+                                <span class="text-slate-400 font-normal"
+                                    >(اختياري)</span
+                                ></label
                             >
                             <textarea
                                 name="description"
                                 id="description"
                                 rows="3"
-                                class="block w-full border border-slate-300 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Brief description of the class"
+                                class="block w-full border border-slate-300 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-right"
+                                placeholder="وصف قصير للفصل"
                             ></textarea>
                         </div>
-                        <div>
+                        <div class="text-right">
                             <label
                                 for="studentPhones"
                                 class="block text-sm font-bold text-slate-700 mb-2"
-                                >Add Students <span class="text-slate-400 font-normal">(Optional)</span></label
+                                >إضافة طلاب
+                                <span class="text-slate-400 font-normal"
+                                    >(اختياري)</span
+                                ></label
                             >
                             <textarea
                                 name="studentPhones"
                                 id="studentPhones"
                                 rows="4"
-                                class="block w-full border border-slate-300 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="One phone number per line (e.g. +1234567890)"
+                                class="block w-full border border-slate-300 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-right"
+                                placeholder="رقم هاتف واحد في كل سطر (مثال: 0123456789)"
                             ></textarea>
                             <p class="mt-2 text-sm text-slate-500">
-                                Enter phone numbers, one per line. Students will be created or linked if they exist.
+                                أدخل أرقام الهواتف، واحد في كل سطر. سيتم إنشاء
+                                الطلاب أو ربطهم إذا كانوا موجودين بالفعل.
                             </p>
                         </div>
                     </div>
 
                     <div
-                        class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-end space-x-4"
+                        class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-end space-x-4 space-x-reverse"
                     >
                         <a
                             href="/teacher/classes"
                             class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-colors"
                         >
-                            Cancel
+                            إلغاء
                         </a>
                         <button
                             type="submit"
                             class="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors"
                         >
-                            Create Class
+                            إنشاء الفصل
                         </button>
                     </div>
                 </form>

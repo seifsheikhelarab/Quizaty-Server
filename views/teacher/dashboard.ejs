@@ -6,84 +6,89 @@
         <title><%= title %></title>
         <link href="/css/output.css" rel="stylesheet" />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap"
             rel="stylesheet"
         />
         <style>
             body {
-                font-family: "Inter", sans-serif;
+                font-family: "Cairo", sans-serif;
             }
         </style>
     </head>
     <body
-        class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900"
+        class="bg-slate-50 min-h-screen text-slate-800 selection:bg-indigo-100 selection:text-indigo-900"
     >
         <!-- Header -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
             <div
                 class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between"
             >
-                <div class="flex items-center space-x-3">
-                    <div
-                        class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3"
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <a
+                        href="/teacher/dashboard"
+                        class="flex items-center space-x-3 space-x-reverse"
                     >
-                        <svg
-                            class="w-5 h-5 text-white rotate-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        <div
+                            class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3"
                         >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 14l9-5-9-5-9 5 9 5z"
-                            ></path>
-                        </svg>
-                    </div>
-                    <h1
-                        class="text-xl font-black tracking-tight text-slate-900"
-                    >
-                        QuizMaster
-                    </h1>
+                            <svg
+                                class="w-5 h-5 text-white rotate-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 14l9-5-9-5-9 5 9 5z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h1
+                            class="text-xl font-black tracking-tight text-slate-900"
+                        >
+                            QuizMaster
+                        </h1>
+                    </a>
                     <span
-                        class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-md ml-2 border border-indigo-100"
-                        >Teacher</span
+                        class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-md border border-indigo-100"
+                        >معلم</span
                     >
                 </div>
 
-                <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-6 space-x-reverse">
                     <a
                         href="/teacher/dashboard"
                         class="text-sm font-bold text-slate-900"
-                        >Dashboard</a
+                        >لوحة التحكم</a
                     >
                     <a
                         href="/teacher/quizzes"
                         class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
-                        >Quizzes</a
+                        >الاختبارات</a
                     >
                     <a
                         href="/teacher/classes"
                         class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
-                        >Classes</a
+                        >الفصول</a
                     >
                     <div class="h-6 w-px bg-slate-200"></div>
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-3 space-x-reverse">
                         <div
                             class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold border border-slate-200"
                         >
                             <%= teacher.name ?
-                            teacher.name.charAt(0).toUpperCase() : 'T' %>
+                            teacher.name.charAt(0).toUpperCase() : 'م' %>
                         </div>
                     </div>
                     <a
                         href="/auth/logout"
                         class="text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors flex items-center group"
                     >
-                        <span>Logout</span>
+                        <span>تسجيل الخروج</span>
                         <svg
-                            class="w-4 h-4 ml-1.5 opacity-50 group-hover:opacity-100 transition-opacity"
+                            class="w-4 h-4 mr-1.5 opacity-50 group-hover:opacity-100 transition-opacity rotate-180"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -101,12 +106,12 @@
         </header>
 
         <main class="max-w-6xl mx-auto px-6 py-12">
-            <div class="mb-12">
+            <div class="mb-12 text-right">
                 <h2 class="text-3xl font-black text-slate-900 tracking-tight">
-                    Welcome, <%= teacher.name || 'Teacher' %>! 👋
+                    مرحباً بك، <%= teacher.name || 'معلم' %>! 👋
                 </h2>
                 <p class="text-slate-500 mt-2 text-lg">
-                    Here is an overview of your teaching activity.
+                    إليك نظرة عامة على نشاطك التعليمي.
                 </p>
             </div>
 
@@ -114,9 +119,11 @@
                 <!-- Total Quizzes Card -->
                 <a
                     href="/teacher/quizzes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-200 group"
+                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-200 group text-right"
                 >
-                    <div class="flex items-center justify-between mb-4">
+                    <div
+                        class="flex items-center justify-between mb-4 flex-row-reverse"
+                    >
                         <div
                             class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform"
                         >
@@ -135,7 +142,7 @@
                             </svg>
                         </div>
                         <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-indigo-400 transition-colors"
+                            class="w-5 h-5 text-slate-300 group-hover:text-indigo-400 transition-colors rotate-180"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -155,7 +162,7 @@
                         <p
                             class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
                         >
-                            Total Quizzes
+                            إجمالي الاختبارات
                         </p>
                     </div>
                 </a>
@@ -163,9 +170,11 @@
                 <!-- Total Classes Card -->
                 <a
                     href="/teacher/classes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:emerald-300 transition-all duration-200 group"
+                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:emerald-300 transition-all duration-200 group text-right"
                 >
-                    <div class="flex items-center justify-between mb-4">
+                    <div
+                        class="flex items-center justify-between mb-4 flex-row-reverse"
+                    >
                         <div
                             class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform"
                         >
@@ -184,7 +193,7 @@
                             </svg>
                         </div>
                         <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-emerald-400 transition-colors"
+                            class="w-5 h-5 text-slate-300 group-hover:text-emerald-400 transition-colors rotate-180"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -204,7 +213,7 @@
                         <p
                             class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
                         >
-                            Total Classes
+                            إجمالي الفصول
                         </p>
                     </div>
                 </a>
@@ -212,9 +221,11 @@
                 <!-- Total Students Card -->
                 <a
                     href="/teacher/classes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 group"
+                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 group text-right"
                 >
-                    <div class="flex items-center justify-between mb-4">
+                    <div
+                        class="flex items-center justify-between mb-4 flex-row-reverse"
+                    >
                         <div
                             class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"
                         >
@@ -233,7 +244,7 @@
                             </svg>
                         </div>
                         <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors"
+                            class="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors rotate-180"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -253,7 +264,7 @@
                         <p
                             class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
                         >
-                            Total Students Enrolled
+                            إجمالي الطلاب المسجلين
                         </p>
                     </div>
                 </a>
@@ -261,9 +272,11 @@
                 <!-- Total Submissions Card -->
                 <a
                     href="/teacher/quizzes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all duration-200 group"
+                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all duration-200 group text-right"
                 >
-                    <div class="flex items-center justify-between mb-4">
+                    <div
+                        class="flex items-center justify-between mb-4 flex-row-reverse"
+                    >
                         <div
                             class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform"
                         >
@@ -282,7 +295,7 @@
                             </svg>
                         </div>
                         <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-amber-400 transition-colors"
+                            class="w-5 h-5 text-slate-300 group-hover:text-amber-400 transition-colors rotate-180"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -302,7 +315,7 @@
                         <p
                             class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
                         >
-                            Total Submissions
+                            إجمالي الردود
                         </p>
                     </div>
                 </a>

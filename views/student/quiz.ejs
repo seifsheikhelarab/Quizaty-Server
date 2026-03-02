@@ -1,72 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link href="/css/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900" 
+<body class="bg-slate-50 min-h-screen text-slate-900 selection:bg-indigo-100 selection:text-indigo-900" 
       x-data="quizTimer()" 
       x-init="initTimer()">
 
     <!-- Header Overlay -->
     <div class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-50 shadow-sm transition-all duration-300">
         <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-            <h1 class="text-xl font-bold tracking-tight text-slate-900 truncate pr-4"><%= quiz.title %></h1>
-            <div class="flex items-center space-x-2 bg-slate-100 px-4 py-2 rounded-full border border-slate-200"
+            <h1 class="text-xl font-black tracking-tight text-slate-900 truncate pl-4 text-right"><%= quiz.title %></h1>
+            <div class="flex items-center space-x-2 space-x-reverse bg-slate-100 px-5 py-2 rounded-full border border-slate-200 shadow-sm"
                  :class="{'bg-rose-50 border-rose-200 text-rose-700': timeLeft < 60}">
                 <svg class="w-5 h-5 text-slate-500" :class="{'text-rose-500 animate-pulse': timeLeft < 60}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="font-mono font-bold tracking-wider" x-text="formattedTime"></span>
+                <span class="font-mono font-black tracking-wider text-xl" x-text="formattedTime"></span>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-6 pt-28 pb-20">
-        <div class="mb-10 text-center">
-            <h2 class="text-3xl font-extrabold text-slate-900 mb-3"><%= quiz.title %></h2>
-            <p class="text-slate-500 max-w-2xl mx-auto leading-relaxed"><%= quiz.description %></p>
+    <main class="max-w-4xl mx-auto px-6 pt-28 pb-24">
+        <div class="mb-12 text-right">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-emerald-50 text-emerald-700 mb-4 shadow-sm border border-emerald-100">الاختبار جارٍ حالياً</span>
+            <h2 class="text-4xl font-black text-slate-900 mb-4 tracking-tight"><%= quiz.title %></h2>
+            <% if (quiz.description) { %>
+                <p class="text-slate-500 max-w-2xl leading-relaxed text-lg"><%= quiz.description %></p>
+            <% } %>
         </div>
 
         <form id="quizForm" action="/quiz/<%= student.id %>/<%= quiz.id %>/submit" method="POST" class="space-y-8 relative">
             <% quiz.questions.forEach((question, index) => { %>
-                <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                    <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-start">
-                        <span class="bg-indigo-100 text-indigo-700 font-black text-sm w-7 h-7 rounded-full flex items-center justify-center mr-3 shrink-0"><%= index + 1 %></span>
-                        <span class="pt-0.5"><%= question.questionText %></span>
-                    </h3>
+                <div class="bg-white rounded-3xl p-10 shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden group text-right">
+                    <div class="absolute top-0 right-0 w-2 h-full bg-indigo-500 transform scale-y-0 group-hover:scale-y-100 transition-transform origin-top"></div>
+                    
+                    <div class="flex justify-between items-start mb-8 border-b border-slate-50 pb-4">
+                        <h3 class="text-xl font-black text-slate-900 leading-tight pr-4">
+                            <%= question.questionText %>
+                        </h3>
+                        <span class="bg-indigo-100 text-indigo-700 font-black text-sm w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-indigo-200">
+                            <%= index + 1 %>
+                        </span>
+                    </div>
                     
                     <% if (question.imageUrl) { %>
-                        <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 relative group/image">
-                            <img src="<%= question.imageUrl %>" alt="Question Image" class="w-full max-h-96 object-contain">
+                        <div class="mb-8 rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 relative group/image">
+                            <img src="<%= question.imageUrl %>" alt="صورة السؤال" class="w-full max-h-[500px] object-contain">
                             <div class="absolute inset-0 bg-slate-900/0 group-hover/image:bg-slate-900/5 transition-colors"></div>
                         </div>
                     <% } %>
                     
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-1 gap-4">
                         <% question.shuffledOptions.forEach((option) => { %>
-                            <label class="flex items-center p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                            <label class="relative flex items-center p-5 border-2 border-slate-100 rounded-2xl cursor-pointer hover:bg-indigo-50/30 hover:border-indigo-200 transition-all focus-within:ring-4 focus-within:ring-indigo-500/10 focus-within:border-indigo-500 flex-row-reverse group/option">
                                 <input type="radio" 
                                        name="answers[<%= question.id %>]" 
                                        value="<%= option.originalIndex %>"
                                        <% if (savedAnswers && savedAnswers[question.id] == option.originalIndex) { %>checked<% } %>
                                        onchange="saveAnswer('<%= question.id %>')"
-                                       class="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2 shrink-0">
-                                <span class="ml-3 text-slate-700 font-medium"><%= option.text %></span>
+                                       class="w-6 h-6 text-indigo-600 border-slate-300 focus:ring-indigo-500 focus:ring-offset-2 shrink-0 transition-transform group-hover/option:scale-110">
+                                <div class="mr-4 text-slate-700 font-bold text-lg text-right w-full transition-colors group-hover/option:text-indigo-900"><%= option.text %></div>
                             </label>
                         <% }) %>
                     </div>
                 </div>
             <% }) %>
 
-            <div class="sticky bottom-6 mt-12 flex justify-center z-40">
+            <div class="sticky bottom-10 mt-16 flex justify-center z-40">
                 <button type="submit" 
-                        class="bg-indigo-600 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-indigo-700 hover:shadow-xl hover:-translate-y-0.5 transition-all outline-none focus:ring-4 focus:ring-indigo-500/50 flex items-center group">
-                    <span>Submit Quiz</span>
-                    <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        class="bg-indigo-600 text-white px-12 py-5 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 hover:shadow-indigo-500/40 hover:-translate-y-1 transition-all outline-none focus:ring-4 focus:ring-indigo-500/50 flex items-center group flex-row-reverse">
+                    <span>إرسال الإجابات وإنهاء الاختبار</span>
+                    <svg class="w-6 h-6 mr-3 transform group-hover:-translate-x-1 transition-transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
         </form>
@@ -78,6 +91,7 @@
             Alpine.data('quizTimer', () => ({
                 timeLeft: 0,
                 timer: null,
+                submitted: false,
                 
                 initTimer() {
                     const startedAt = new Date('<%= submission.startedAt.toISOString() %>').getTime();
@@ -105,25 +119,25 @@
                 },
                 
                 autoSubmit() {
-                    // Prevent multiple submissions
                     if (this.submitted) return;
                     this.submitted = true;
                     
                     // Show a message to the user
                     document.body.insertAdjacentHTML('beforeend', `
-                        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center">
-                            <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center transform animate-bounce-short">
-                                <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg class="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center">
+                            <div class="bg-white rounded-3xl p-10 max-w-sm w-full mx-4 shadow-2xl text-center transform scale-110">
+                                <div class="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                                    <svg class="w-10 h-10 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 </div>
-                                <h3 class="text-xl font-bold text-slate-900 mb-2">Time's Up!</h3>
-                                <p class="text-slate-500">Submitting your answers automatically...</p>
+                                <h3 class="text-3xl font-black text-slate-900 mb-3">انتهى الوقت!</h3>
+                                <p class="text-slate-500 font-bold">جاري إرسال إجاباتك تلقائياً الآن...</p>
                             </div>
                         </div>
                     `);
                     
-                    // Submit form naturally
-                    document.getElementById('quizForm').submit();
+                    setTimeout(() => {
+                        document.getElementById('quizForm').submit();
+                    }, 2000);
                 }
             }));
 
@@ -168,35 +182,23 @@
             // Anti-cheating listeners
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
-                    reportViolation('TAB_SWITCH', 'Student switched tabs or minimized the browser.');
+                    reportViolation('TAB_SWITCH', 'Switched tabs or minimized.');
                 }
             });
 
-            document.addEventListener('copy', (e) => {
-                e.preventDefault();
-                reportViolation('COPY_ATTEMPT');
-            });
-
-            document.addEventListener('paste', (e) => {
-                e.preventDefault();
-                reportViolation('PASTE_ATTEMPT');
-            });
-
-            document.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                reportViolation('RIGHT_CLICK', 'Student attempted to use right click.');
-            });
+            document.addEventListener('copy', (e) => { e.preventDefault(); reportViolation('COPY_ATTEMPT'); });
+            document.addEventListener('paste', (e) => { e.preventDefault(); reportViolation('PASTE_ATTEMPT'); });
+            document.addEventListener('contextmenu', (e) => { e.preventDefault(); reportViolation('RIGHT_CLICK'); });
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'F12' || 
                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
                    (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
                     e.preventDefault();
-                    reportViolation('DEV_TOOLS', 'Attempted key combo: ' + e.key);
+                    reportViolation('DEV_TOOLS');
                 }
             });
 
-            // Prevent text selection
             document.body.style.userSelect = 'none';
         });
     </script>

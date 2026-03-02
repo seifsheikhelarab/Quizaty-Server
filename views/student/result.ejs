@@ -1,119 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | QuizMaster</title>
+    <title><%= title %></title>
     <link href="/css/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
+<body class="bg-slate-50 min-h-screen text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
 
     <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/student/dashboard" class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
-                </div>
-                <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <a href="/student/quizzes" class="flex items-center space-x-3 space-x-reverse group">
+                    <svg class="w-5 h-5 text-slate-500 group-hover:text-indigo-600 transition-colors rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <h1 class="text-xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">العودة للاختبارات</h1>
+                </a>
+            </div>
+            <a href="/auth/logout" class="text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors flex items-center group">
+                <span>تسجيل الخروج</span>
+                <svg class="w-4 h-4 mr-1.5 opacity-50 group-hover:opacity-100 transition-opacity rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </a>
-            <a href="/student/quizzes" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Back to Quizzes</a>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-6 py-12">
-        <% 
-            const quiz = submission.quiz;
-            const timeTakenMins = submission.submittedAt ? ((new Date(submission.submittedAt).getTime() - new Date(submission.startedAt).getTime()) / 60000).toFixed(1) : 'N/A';
-            const scoreColor = submission.score >= (quiz.totalMarks / 2) ? 'text-emerald-600' : 'text-rose-600';
-            let answers = {};
-            if (submission.answers) {
-                answers = typeof submission.answers === 'string' ? JSON.parse(submission.answers) : submission.answers;
-            }
-        %>
-
-        <div class="mb-8">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mb-3"><%= quiz.title %></span>
-            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Submission Details</h2>
-            
-            <div class="mt-4 flex flex-wrap gap-4 text-sm text-slate-500 font-medium">
-                <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                    <span class="text-xs uppercase text-slate-400 mr-2">Score</span>
-                    <span class="text-lg font-black <%= scoreColor %>"><%= submission.score %></span><span class="text-slate-400">/<%= quiz.totalMarks %></span>
-                </div>
-                <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                    <span class="text-xs uppercase text-slate-400 mr-2">Time Taken</span>
-                    <span class="text-slate-900 font-bold"><%= timeTakenMins %> mins</span>
-                </div>
-                <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                    <span class="text-xs uppercase text-slate-400 mr-2">Submitted</span>
-                    <span class="text-slate-900"><%= new Date(submission.submittedAt || submission.startedAt).toLocaleString() %></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="px-6 py-5 border-b border-slate-100 bg-slate-50">
-                <h3 class="font-bold text-slate-900">Your Answers vs Correct Answers</h3>
-            </div>
-            
-            <div class="p-6 space-y-8">
-                <% quiz.questions.forEach((q, index) => { %>
-                    <% 
-                        const studentAnswerStr = answers[q.id];
-                        const studentAnswer = studentAnswerStr !== undefined ? parseInt(studentAnswerStr) : -1;
-                        const isCorrect = studentAnswer === q.correctOption;
-                        let badgeColor = 'bg-slate-100 text-slate-600';
-                        let badgeText = 'Skipped';
-                        if (studentAnswer !== -1) {
-                            badgeColor = isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
-                            badgeText = isCorrect ? 'Correct' : 'Incorrect';
-                        }
-                    %>
-                    <div class="border border-slate-100 rounded-xl p-5 bg-white shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-1 h-full <%= isCorrect ? 'bg-emerald-500' : (studentAnswer !== -1 ? 'bg-rose-500' : 'bg-slate-300') %>"></div>
-                        <div class="pl-3">
-                            <div class="flex justify-between items-start mb-4">
-                                <h4 class="text-sm font-bold text-slate-900 leading-snug pr-4">
-                                    <span class="text-slate-400 mr-1"><%= index + 1 %>.</span> <%= q.questionText %>
-                                </h4>
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold shrink-0 <%= badgeColor %>"><%= badgeText %></span>
-                            </div>
-                            <% if(q.imageUrl) { %>
-                                <div class="mb-4"><img src="<%= q.imageUrl %>" alt="Question" class="max-h-48 rounded border border-slate-200"></div>
-                            <% } %>
-                            <div class="space-y-2 mt-4">
-                                <% q.options.forEach((opt, optIndex) => { %>
-                                    <% 
-                                        const isSelected = studentAnswer === optIndex;
-                                        const isActualCorrect = q.correctOption === optIndex;
-                                        let optClass = 'border-slate-200 text-slate-600 bg-white';
-                                        let label = '';
-                                        if (isSelected && isActualCorrect) {
-                                            optClass = 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold';
-                                            label = 'Your answer ✓ Correct';
-                                        } else if (isSelected && !isActualCorrect) {
-                                            optClass = 'border-rose-300 bg-rose-50 text-rose-900 font-bold';
-                                            label = 'Your answer ✗';
-                                        } else if (isActualCorrect) {
-                                            optClass = 'border-emerald-200 bg-emerald-50 text-emerald-700 border-dashed';
-                                            label = 'Correct answer';
-                                        }
-                                    %>
-                                    <div class="flex items-center justify-between p-3 rounded-lg border text-sm <%= optClass %>">
-                                        <span><%= opt %></span>
-                                        <% if (label) { %><span class="text-xs font-bold"><%= label %></span><% } %>
-                                    </div>
-                                <% }) %>
-                            </div>
+    <main class="max-w-3xl mx-auto px-6 py-12">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden mb-8 text-right relative">
+            <div class="absolute top-0 right-0 w-full h-2 bg-indigo-500"></div>
+            <div class="p-10">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-indigo-50 text-indigo-700 mb-4 shadow-sm border border-indigo-100">نتائج الاختبار</span>
+                        <h2 class="text-3xl font-black text-slate-900 mb-2 leading-tight"><%= quiz.title %></h2>
+                        <p class="text-slate-500 font-medium tracking-tight">لقد أتممت الاختبار بنجاح!</p>
+                    </div>
+                    <div class="flex items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100 shrink-0">
+                        <div class="text-center px-4 border-l border-slate-200 last:border-0 ml-4">
+                            <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">الدرجة</p>
+                            <p class="text-3xl font-black text-indigo-600"><%= result.score %> / <%= result.totalQuestions %></p>
+                        </div>
+                        <div class="text-center px-4">
+                            <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">النسبة</p>
+                            <p class="text-3xl font-black text-emerald-600 text-left" dir="ltr"><%= Math.round((result.score / result.totalQuestions) * 100) %>%</p>
                         </div>
                     </div>
-                <% }) %>
+                </div>
             </div>
         </div>
 
-        <div class="mt-8">
-            <a href="/student/quizzes" class="w-full inline-block text-center bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-all">
-                Back to Quizzes
+        <div class="space-y-6">
+            <h3 class="text-xl font-black text-slate-900 mb-6 flex items-center pr-2">
+                <span class="w-1.5 h-6 bg-indigo-500 rounded-full ml-3"></span>
+                مراجعة الإجابات
+            </h3>
+            
+            <% quiz.questions.forEach((question, index) => { %>
+                <% const submissionAnswer = submission.answers[question.id]; %>
+                <% const isCorrect = parseInt(submissionAnswer) === question.correctAnswer; %>
+                
+                <div class="bg-white rounded-2xl border <%= isCorrect ? 'border-emerald-100' : 'border-rose-100' %> p-8 shadow-sm relative overflow-hidden text-right group transition-all hover:shadow-md">
+                    <div class="absolute top-0 right-0 w-1.5 h-full <%= isCorrect ? 'bg-emerald-500' : 'bg-rose-500' %> opacity-20 group-hover:opacity-100 transition-opacity"></div>
+                    
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex gap-4">
+                            <span class="w-10 h-10 rounded-xl <%= isCorrect ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100' %> border flex items-center justify-center font-black shrink-0">
+                                <%= index + 1 %>
+                            </span>
+                            <h4 class="text-lg font-bold text-slate-900 leading-snug"><%= question.questionText %></h4>
+                        </div>
+                        <div class="shrink-0">
+                            <% if (isCorrect) { %>
+                                <span class="bg-emerald-100 text-emerald-700 text-xs font-black px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    إجابة صحيحة
+                                </span>
+                            <% } else { %>
+                                <span class="bg-rose-100 text-rose-700 text-xs font-black px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    إجابة خاطئة
+                                </span>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                        <% question.options.forEach((option, optIndex) => { %>
+                            <% 
+                                const isUserChoice = parseInt(submissionAnswer) === optIndex;
+                                const isCorrectAnswer = optIndex === question.correctAnswer;
+                                let bgClass = 'bg-slate-50 border-slate-200 opacity-60';
+                                let textClass = 'text-slate-500';
+                                
+                                if (isCorrectAnswer) {
+                                    bgClass = 'bg-emerald-50 border-emerald-500/30 ring-1 ring-emerald-500/20';
+                                    textClass = 'text-emerald-900 font-black';
+                                } else if (isUserChoice && !isCorrect) {
+                                    bgClass = 'bg-rose-50 border-rose-500/30 ring-1 ring-rose-500/20';
+                                    textClass = 'text-rose-900 font-black';
+                                }
+                            %>
+                            <div class="p-4 rounded-xl border-2 <%= bgClass %> flex items-center justify-between text-right">
+                                <span class="<%= textClass %> text-sm font-bold leading-relaxed"><%= option %></span>
+                                <% if (isCorrectAnswer) { %>
+                                    <svg class="w-4 h-4 text-emerald-600 shrink-0 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                <% } else if (isUserChoice && !isCorrect) { %>
+                                    <svg class="w-4 h-4 text-rose-600 shrink-0 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                                <% } %>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+
+        <div class="mt-12">
+            <a href="/student/quizzes" class="w-full inline-flex items-center justify-center bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-slate-800 transition-all shadow-xl hover:shadow-slate-900/20 text-lg group">
+                العودة لقائمة الاختبارات
+                <svg class="w-5 h-5 mr-3 rotate-180 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             </a>
         </div>
     </main>
