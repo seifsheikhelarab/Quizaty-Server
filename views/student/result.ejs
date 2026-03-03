@@ -59,7 +59,7 @@
             
             <% quiz.questions.forEach((question, index) => { %>
                 <% const submissionAnswer = submission.answers[question.id]; %>
-                <% const isCorrect = parseInt(submissionAnswer) === question.correctAnswer; %>
+                <% const isCorrect = parseInt(submissionAnswer) === question.correctOption; %>
                 
                 <div class="bg-white rounded-2xl border <%= isCorrect ? 'border-emerald-100' : 'border-rose-100' %> p-8 shadow-sm relative overflow-hidden text-right group transition-all hover:shadow-md">
                     <div class="absolute top-0 right-0 w-1.5 h-full <%= isCorrect ? 'bg-emerald-500' : 'bg-rose-500' %> opacity-20 group-hover:opacity-100 transition-opacity"></div>
@@ -90,7 +90,7 @@
                         <% question.options.forEach((option, optIndex) => { %>
                             <% 
                                 const isUserChoice = parseInt(submissionAnswer) === optIndex;
-                                const isCorrectAnswer = optIndex === question.correctAnswer;
+                                const isCorrectAnswer = optIndex === question.correctOption;
                                 let bgClass = 'bg-slate-50 border-slate-200 opacity-60';
                                 let textClass = 'text-slate-500';
                                 
