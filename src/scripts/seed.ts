@@ -92,13 +92,13 @@ async function main() {
         "Geometry Proofs",
     ];
 
-  for (const teacher of teachers) {
-    const quizCount = faker.number.int({ min: 2, max: 4 });
-    for (let q = 0; q < quizCount; q++) {
-      const now = new Date();
-      const startOffset = faker.number.int({ min: -7, max: 14 }) * 24 * 60 * 60 * 1000;
-      const startTime = new Date(now.getTime() + startOffset);
-      const endTime = new Date(startTime.getTime() + 3 * 24 * 60 * 60 * 1000);
+    for (const teacher of teachers) {
+        const quizCount = faker.number.int({ min: 2, max: 4 });
+        for (let q = 0; q < quizCount; q++) {
+            const now = new Date();
+            const startOffset = faker.number.int({ min: -7, max: 14 }) * 24 * 60 * 60 * 1000;
+            const startTime = new Date(now.getTime() + startOffset);
+            const endTime = new Date(startTime.getTime() + 3 * 24 * 60 * 60 * 1000);
 
             const classIds = faker.helpers
                 .arrayElements(
@@ -242,10 +242,42 @@ async function main() {
 
     console.log(`  ✓ Created test accounts`);
 
+    // Create a default super admin
+    await prisma.admin.deleteMany();
+    const testAdmin = await prisma.admin.create({
+        data: {
+            email: "admin@test.com",
+            password: HASHED_PASSWORD,
+            name: "Super Admin",
+            role: "SUPER_ADMIN"
+        }
+    });
+    console.log(`  ✓ Created super admin: admin@test.com`);
+
+    // Create sample subscriptions for teachers
+    await prisma.subscription.deleteMany();
+    for (const teacher of teachers) {
+        const tier = faker.helpers.arrayElement(['BASIC', 'PREMIUM']);
+        const status = faker.helpers.arrayElement(['active', 'active', 'cancelled']);
+        const expiresAt = new Date();
+        expiresAt.setMonth(expiresAt.getMonth() + faker.number.int({ min: 1, max: 12 }));
+
+        await prisma.subscription.create({
+            data: {
+                teacherId: teacher.id,
+                tier,
+                status,
+                expiresAt: status === 'active' ? expiresAt : null
+            }
+        });
+    }
+    console.log(`  ✓ Created sample subscriptions`);
+
     console.log("\n✅ Seeding complete!");
     console.log("\nTest login credentials (password: password123):");
     console.log("  Teacher: teacher@test.com");
     console.log("  Student: +15550000002");
+    console.log("  Admin:   admin@test.com");
 }
 
 main()

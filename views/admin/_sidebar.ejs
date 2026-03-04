@@ -1,0 +1,61 @@
+<!-- Admin Sidebar Partial -->
+<aside class="w-64 bg-slate-900 text-white flex flex-col fixed inset-y-0 right-0 z-30">
+    <div class="p-6 border-b border-slate-700/50">
+        <div class="flex items-center space-x-3 space-x-reverse">
+            <div class="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/30 transform -rotate-3">
+                <svg class="w-6 h-6 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-tight">QuizMaster</h1>
+                <span class="px-2 py-0.5 bg-violet-500/20 text-violet-300 text-[10px] font-bold rounded-md border border-violet-500/30">مدير</span>
+            </div>
+        </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1">
+        <a href="/admin/dashboard" class="flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl <%= active === 'dashboard' ? 'bg-violet-600/20 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white' %> font-bold text-sm transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            <span>لوحة التحكم</span>
+        </a>
+        <a href="/admin/teachers" class="flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl <%= active === 'teachers' ? 'bg-violet-600/20 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white' %> font-medium text-sm transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
+            <span>المعلمون</span>
+        </a>
+        <a href="/admin/students" class="flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl <%= active === 'students' ? 'bg-violet-600/20 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white' %> font-medium text-sm transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <span>الطلاب</span>
+        </a>
+        <a href="/admin/quizzes" class="flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl <%= active === 'quizzes' ? 'bg-violet-600/20 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white' %> font-medium text-sm transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>الاختبارات</span>
+        </a>
+        <a href="/admin/subscriptions" class="flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl <%= active === 'subscriptions' ? 'bg-violet-600/20 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white' %> font-medium text-sm transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+            <span>الاشتراكات</span>
+        </a>
+        <% if (admin.role === 'SUPER_ADMIN') { %>
+        <a href="/admin/invite" class="flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl <%= active === 'invite' ? 'bg-violet-600/20 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white' %> font-medium text-sm transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+            <span>دعوة مدير</span>
+        </a>
+        <% } %>
+    </nav>
+
+    <div class="p-4 border-t border-slate-700/50">
+        <div class="flex items-center space-x-3 space-x-reverse mb-3 px-2">
+            <div class="w-9 h-9 bg-violet-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <%= admin.name ? admin.name.charAt(0).toUpperCase() : 'م' %>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-white truncate"><%= admin.name || 'مدير' %></p>
+                <p class="text-xs text-slate-400 truncate"><%= admin.email %></p>
+            </div>
+        </div>
+        <a href="/auth/admin/logout" class="flex items-center justify-center space-x-2 space-x-reverse px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-600/20 text-slate-400 hover:text-rose-400 text-sm font-bold transition-all">
+            <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <span>تسجيل الخروج</span>
+        </a>
+    </div>
+</aside>

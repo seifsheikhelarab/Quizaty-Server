@@ -7,15 +7,16 @@ datasource db {
 }
 
 model Teacher {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  phone     String?
-  quizzes   Quiz[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  classes   Class[]
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String?
+  phone         String?
+  quizzes       Quiz[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  classes       Class[]
+  subscriptions Subscription[]
 }
 
 model Student {
@@ -77,9 +78,40 @@ model Class {
   name        String
   description String?
   teacherId   String
+  teacher     Teacher   @relation(fields: [teacherId], references: [id])
+  students    Student[]
+  quizzes     Quiz[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum SubscriptionTier {
+  BASIC
+  PREMIUM
+}
+
+model Subscription {
+  id        String    @id @default(cuid())
+  teacherId String
+  tier      String
+  status    String    @default("active")
+  expiresAt DateTime?
   teacher   Teacher   @relation(fields: [teacherId], references: [id])
-  students  Student[]
-  quizzes   Quiz[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Admin {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String?
+  role      AdminRole @default(ADMIN)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }

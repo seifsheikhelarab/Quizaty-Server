@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>body { font-family: "Cairo", sans-serif; }</style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <div class="flex min-h-screen">
+        <%- include('_sidebar', { active: '' }) %>
+        <main class="flex-1 mr-64">
+            <div class="p-8">
+                <!-- Breadcrumb -->
+                <div class="mb-6">
+                    <a href="/admin/dashboard" class="text-violet-600 hover:text-violet-800 text-sm font-bold">← العودة للوحة التحكم</a>
+                </div>
+
+                <!-- Class Header -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 mb-6">
+                    <div class="flex items-start gap-6">
+                        <div class="w-20 h-20 bg-linear-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-lg shadow-amber-500/20">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-black text-slate-900"><%= classData.name %></h2>
+                            <% if (classData.description) { %>
+                            <p class="text-slate-500 mt-1"><%= classData.description %></p>
+                            <% } %>
+                            <div class="flex flex-wrap gap-4 mt-3 text-sm text-slate-500">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
+                                    المعلم:
+                                    <a href="/admin/teachers/<%= classData.teacher.id %>" class="text-violet-600 hover:text-violet-800 font-medium"><%= classData.teacher.name || classData.teacher.email %></a>
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2">تاريخ الإنشاء: <%= new Date(classData.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Students -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-200">
+                            <h3 class="font-bold text-slate-900">الطلاب (<%= classData.students.length %>)</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200">
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">الاسم</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">الهاتف</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <% if (classData.students.length === 0) { %>
+                                    <tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">لا يوجد طلاب</td></tr>
+                                    <% } %>
+                                    <% classData.students.forEach(student => { %>
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-3">
+                                            <div class="flex items-center space-x-3 space-x-reverse">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xs">
+                                                    <%= student.name.charAt(0).toUpperCase() %>
+                                                </div>
+                                                <span class="font-bold text-slate-900 text-sm"><%= student.name %></span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-3 text-slate-600 text-sm font-mono" dir="ltr"><%= student.phone %></td>
+                                        <td class="px-6 py-3"><a href="/admin/students/<%= student.id %>" class="text-violet-600 hover:text-violet-800 text-sm font-bold">عرض</a></td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Quizzes -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-200">
+                            <h3 class="font-bold text-slate-900">الاختبارات (<%= classData.quizzes.length %>)</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200">
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">العنوان</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">المدة</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">التاريخ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <% if (classData.quizzes.length === 0) { %>
+                                    <tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">لا توجد اختبارات</td></tr>
+                                    <% } %>
+                                    <% classData.quizzes.forEach(quiz => { %>
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-3 font-bold text-slate-900 text-sm"><%= quiz.title %></td>
+                                        <td class="px-6 py-3 text-slate-600 text-sm"><%= quiz.duration %> د</td>
+                                        <td class="px-6 py-3 text-slate-500 text-sm"><%= new Date(quiz.startTime).toLocaleDateString('ar-EG') %></td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>body { font-family: "Cairo", sans-serif; }</style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <div class="flex min-h-screen">
+        <%- include('_sidebar', { active: 'subscriptions' }) %>
+        <main class="flex-1 mr-64">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tight">الاشتراكات</h2>
+                        <p class="text-slate-500 mt-1">إجمالي <%= total %> اشتراك</p>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">المعلم</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">المستوى</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">الحالة</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">تاريخ الانتهاء</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">تاريخ الإنشاء</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <% if (subscriptions.length === 0) { %>
+                                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-400">لا توجد اشتراكات</td></tr>
+                                <% } %>
+                                <% subscriptions.forEach(sub => { %>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <a href="/admin/teachers/<%= sub.teacher.id %>" class="flex items-center space-x-3 space-x-reverse">
+                                            <div class="w-9 h-9 bg-violet-100 rounded-full flex items-center justify-center text-violet-600 font-bold text-sm">
+                                                <%= sub.teacher.name ? sub.teacher.name.charAt(0).toUpperCase() : 'م' %>
+                                            </div>
+                                            <span class="font-bold text-slate-900 hover:text-violet-600 transition-colors"><%= sub.teacher.name || sub.teacher.email %></span>
+                                        </a>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= sub.tier === 'PREMIUM' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700' %>">
+                                            <%= sub.tier %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= sub.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' %>">
+                                            <%= sub.status === 'active' ? 'نشط' : 'ملغي' %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-500 text-sm">
+                                        <%= sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString('ar-EG') : '—' %>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-500 text-sm"><%= new Date(sub.createdAt).toLocaleDateString('ar-EG') %></td>
+                                    <td class="px-6 py-4">
+                                        <a href="/admin/teachers/<%= sub.teacher.id %>" class="text-violet-600 hover:text-violet-800 text-sm font-bold">إدارة</a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (totalPages > 1) { %>
+                    <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                        <div class="text-sm text-slate-500">صفحة <%= page %> من <%= totalPages %></div>
+                        <div class="flex gap-2">
+                            <% if (page > 1) { %>
+                            <a href="/admin/subscriptions?page=<%= page - 1 %>" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">السابق</a>
+                            <% } %>
+                            <% if (page < totalPages) { %>
+                            <a href="/admin/subscriptions?page=<%= page + 1 %>" class="px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-500 transition-colors">التالي</a>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

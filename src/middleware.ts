@@ -36,3 +36,27 @@ export const authenticateStudent = async (req: express.Request, res: express.Res
         res.redirect('/auth/login');
     }
 };
+
+export const authenticateAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const token = req.cookies.admin_token;
+    if (!token) return res.redirect('/auth/admin/login');
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: string; role: string };
+        const admin = await prisma.admin.findUnique({ where: { id: decoded.id } });
+        if (!admin) return res.redirect('/auth/admin/login');
+        (req as any).admin = admin;
+        next();
+    } catch (error) {
+        res.clearCookie('admin_token');
+        res.redirect('/auth/admin/login');
+    }
+};
+
+export const requireSuperAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const admin = (req as any).admin;
+    if (!admin || admin.role !== 'SUPER_ADMIN') {
+        return res.status(403).send('Access denied. Super admin privileges required.');
+    }
+    next();
+};

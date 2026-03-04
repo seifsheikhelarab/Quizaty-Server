@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>body { font-family: "Cairo", sans-serif; }</style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <div class="flex min-h-screen">
+        <%- include('_sidebar', { active: 'quizzes' }) %>
+        <main class="flex-1 mr-64">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tight">الاختبارات</h2>
+                        <p class="text-slate-500 mt-1">إجمالي <%= total %> اختبار</p>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <form method="GET" action="/admin/quizzes" class="mb-6">
+                    <div class="flex gap-3">
+                        <input type="text" name="q" value="<%= q %>" placeholder="بحث بعنوان الاختبار..."
+                            class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all" />
+                        <button type="submit" class="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition-all shadow-sm">
+                            بحث
+                        </button>
+                        <% if (q) { %>
+                        <a href="/admin/quizzes" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all">مسح</a>
+                        <% } %>
+                    </div>
+                </form>
+
+                <!-- Table -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">العنوان</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">المعلم</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">الأسئلة</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">الردود</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">المدة</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">تاريخ الإنشاء</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <% if (quizzes.length === 0) { %>
+                                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-400">لا توجد نتائج</td></tr>
+                                <% } %>
+                                <% quizzes.forEach(quiz => { %>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <span class="font-bold text-slate-900"><%= quiz.title %></span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <a href="/admin/teachers/<%= quiz.teacher.id %>" class="text-violet-600 hover:text-violet-800 text-sm font-medium"><%= quiz.teacher.name || quiz.teacher.email %></a>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700"><%= quiz._count.questions %></span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700"><%= quiz._count.submissions %></span>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-600 text-sm"><%= quiz.duration %> د</td>
+                                    <td class="px-6 py-4 text-slate-500 text-sm"><%= new Date(quiz.createdAt).toLocaleDateString('ar-EG') %></td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (totalPages > 1) { %>
+                    <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                        <div class="text-sm text-slate-500">صفحة <%= page %> من <%= totalPages %></div>
+                        <div class="flex gap-2">
+                            <% if (page > 1) { %>
+                            <a href="/admin/quizzes?page=<%= page - 1 %>&q=<%= q %>" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">السابق</a>
+                            <% } %>
+                            <% if (page < totalPages) { %>
+                            <a href="/admin/quizzes?page=<%= page + 1 %>&q=<%= q %>" class="px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-500 transition-colors">التالي</a>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
