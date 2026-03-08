@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import prisma from '../prisma';
-import { authenticateTeacher } from '../middleware';
+import prisma from '../prisma.js';
+import { authenticateTeacher } from '../middleware.js';
 import multer from 'multer';
-import { sendWhatsAppMessage } from '../services/whatsapp';
-import { getActiveSubscriptionForTeacher, getPlanLimits } from '../services/subscription';
+import { sendWhatsAppMessage } from '../services/whatsapp.js';
+import { getActiveSubscriptionForTeacher, getPlanLimits } from '../services/subscription.js';
 
 const router = Router();
 const upload = multer({ dest: 'uploads/' });
