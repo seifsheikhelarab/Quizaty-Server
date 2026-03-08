@@ -158,6 +158,10 @@
                     <div class="mb-5">
                         <label class="block text-sm font-bold text-slate-700 mb-2">صورة توضيحية <span class="text-slate-400 font-normal">(اختياري)</span></label>
                         <input type="file" name="questions[\${questionCount}][image]" accept="image/*" class="block w-full text-sm text-slate-500 file:ml-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-white file:text-slate-700 file:border file:border-slate-300 hover:file:bg-slate-50 transition-colors">
+                        <div class="mt-2">
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">أو رابط صورة خارجي</label>
+                            <input type="text" name="questions[\${questionCount}][imageUrl]" placeholder="https://example.com/image.jpg" class="block w-full border border-slate-200 rounded-lg py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 text-xs text-right">
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">

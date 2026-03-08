@@ -4,9 +4,10 @@ import { authenticateTeacher } from '../middleware.js';
 import multer from 'multer';
 import { sendWhatsAppMessage } from '../services/whatsapp.js';
 import { getActiveSubscriptionForTeacher, getPlanLimits } from '../services/subscription.js';
+import { uploadToCloudinary } from '../services/cloudinary.js';
 
 const router = Router();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage() });
 
 const SHORT_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -493,15 +494,25 @@ router.post('/quizzes/create', upload.any(), async (req, res) => {
                     connect: selectedClasses
                 },
                 questions: {
-                    create: questionsArr.map((q: any, i: number) => {
-                        const file = files?.find(f => f.fieldname === `questions[${i}][image]`);
+                    create: await Promise.all(Object.entries(questions).map(async ([key, q]: [string, any]) => {
+                        const file = files?.find(f => f.fieldname === `questions[${key}][image]`);
+                        let imageUrl = q.imageUrl || null;
+
+                        if (file) {
+                            try {
+                                imageUrl = await uploadToCloudinary(file.buffer);
+                            } catch (e) {
+                                console.error("Cloudinary upload failed:", e);
+                            }
+                        }
+
                         return {
                             questionText: q.text,
                             options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
                             correctOption: parseInt(q.correctOption),
-                            imageUrl: file ? `/uploads/${file.filename}` : null
+                            imageUrl
                         };
-                    })
+                    }))
                 }
             }
         });
@@ -648,20 +659,32 @@ router.post('/quizzes/:id/edit', upload.any(), async (req, res) => {
                 }
             });
 
-            if (questions && questions.length > 0) {
+            if (questions) {
                 await tx.question.deleteMany({ where: { quizId } });
+
+                const questionData = await Promise.all(Object.entries(questions).map(async ([key, q]: [string, any]) => {
+                    const file = files?.find(f => f.fieldname === `questions[${key}][image]`);
+                    let imageUrl = q.imageUrl || null;
+
+                    if (file) {
+                        try {
+                            imageUrl = await uploadToCloudinary(file.buffer);
+                        } catch (e) {
+                            console.error("Cloudinary upload failed:", e);
+                        }
+                    }
+
+                    return {
+                        quizId,
+                        questionText: q.text,
+                        options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
+                        correctOption: parseInt(q.correctOption),
+                        imageUrl
+                    };
+                }));
+
                 await tx.question.createMany({
-                    data: questions.map((q: any, i: number) => {
-                        const file = files?.find(f => f.fieldname === `questions[${i}][image]`);
-                        const oldImageUrl = quiz.questions[i]?.imageUrl;
-                        return {
-                            quizId,
-                            questionText: q.text,
-                            options: q.options,
-                            correctOption: parseInt(q.correctOption),
-                            imageUrl: file ? `/uploads/${file.filename}` : oldImageUrl
-                        };
-                    })
+                    data: questionData
                 });
             }
         });
