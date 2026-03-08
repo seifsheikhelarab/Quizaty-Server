@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,200 +10,158 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 selection:bg-indigo-100 selection:text-indigo-900">
 
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <a href="/teacher/dashboard" class="flex items-center space-x-3 space-x-reverse">
-                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3">
-                        <svg class="w-5 h-5 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
-                    </div>
-                    <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
-                </a>
+    <%- include('../partials/teacher_nav', { backUrl: '/teacher/quizzes/' + quiz.id, backText: 'العودة للاختبار' }) %>
+
+    <main class="max-w-4xl mx-auto px-6 py-12 text-right">
+        <div class="mb-8">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 mb-3">
+                <%= quiz.title %>
+            </span>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">مشاركة: <%= submission.student.name %></h2>
+            
+            <% 
+                const timeTakenMins = submission.submittedAt ? ((new Date(submission.submittedAt).getTime() - new Date(submission.startedAt).getTime()) / 60000).toFixed(1) : 'غير متوفر';
+                const scoreColor = submission.score >= (quiz.totalMarks / 2) ? 'text-emerald-600' : 'text-rose-600';
+                
+                let answers = {};
+                if (submission.answers) {
+                    answers = typeof submission.answers === 'string' ? JSON.parse(submission.answers) : submission.answers;
+                }
+                let violationsRaw = submission.violations;
+                if (typeof violationsRaw === 'string') {
+                    try { violationsRaw = JSON.parse(violationsRaw); } catch(e) {}
+                }
+                const violationsList = Array.isArray(violationsRaw) ? violationsRaw : (violationsRaw && typeof violationsRaw === 'object' ? Object.entries(violationsRaw).map(([k,v]) => ({ type: k, details: v })) : []);
+                const hasViolations = violationsList.length > 0;
+            %>
+            
+            <div class="mt-4 flex flex-wrap gap-4 text-sm text-slate-500 font-medium flex-row-reverse">
+                <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm flex-row-reverse">
+                    <span class="text-xs uppercase text-slate-400 ml-2">الدرجة</span>
+                    <span class="text-lg font-black <%= scoreColor %>"><%= submission.score %></span><span class="text-slate-400">/<%= quiz.totalMarks %></span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm flex-row-reverse">
+                    <span class="text-xs uppercase text-slate-400 ml-2">الوقت</span>
+                    <span class="text-slate-900 font-bold mr-1"><%= timeTakenMins %> دقيقة</span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm flex-row-reverse">
+                    <span class="text-xs uppercase text-slate-400 ml-2">تم التسليم في</span>
+                    <span class="text-slate-900 mr-1"><%= new Date(submission.submittedAt || submission.startedAt).toLocaleString('ar-EG') %></span>
+                </div>
+            </div>
+        </div>
+
+        <% if (hasViolations) { %>
+            <div class="bg-amber-50 border-r-4 border-amber-500 rounded-lg p-5 mb-8 flex items-start shadow-sm text-right">
+                <svg class="w-6 h-6 text-amber-500 ml-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <div>
+                    <h3 class="text-amber-800 font-bold mb-1">تم اكتشاف مخالفات</h3>
+                    <p class="text-amber-700 text-sm mb-3">قام هذا الطالب بتفعيل فحوصات منع الغش أثناء الاختبار.</p>
+                    <ul class="list-disc list-inside text-sm text-amber-800 font-medium space-y-1">
+                        <% 
+                            const violationMap = {
+                                'tabSwitch': 'تبديل التبويب',
+                                'fullscreenExit': 'الخروج من ملء الشاشة',
+                                'copyPaste': 'محاولة النسخ/اللصق'
+                            };
+                        %>
+                        <% violationsList.forEach(v => { %>
+                            <li><%= violationMap[v.type] || v.type %>: <%= typeof v.details === 'object' ? JSON.stringify(v.details) : v.details %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+            </div>
+        <% } %>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="font-bold text-slate-900">تفاصيل الإجابات</h3>
             </div>
             
-            <div class="flex items-center space-x-6 space-x-reverse">
-                <a href="/teacher/quizzes/<%= quiz.id %>" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center">
-                    <svg class="w-4 h-4 ml-1 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    العودة للاختبار
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-4xl mx-auto px-6 py-12">
-        <div class="mb-10 text-right">
-            <h2 class="text-3xl font-black text-slate-900 tracking-tight">تفاصيل التسليم</h2>
-            <p class="text-slate-500 mt-2 text-lg">عرض إجابات الطالب والأداء والمخالفات المكتشفة.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-right">
-            <!-- Submission Summary -->
-            <div class="md:col-span-1 space-y-6">
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                    <div class="flex flex-col items-center text-center mb-6">
-                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 border border-slate-200 text-slate-600 font-bold text-xl">
-                            <%= submission.student.name.charAt(0).toUpperCase() %>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-900"><%= submission.student.name %></h3>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1"><%= quiz.title %></p>
-                    </div>
-
-                    <div class="space-y-5 pt-6 border-t border-slate-100">
-                        <div class="flex justify-between items-center flex-row-reverse">
-                            <span class="text-sm text-slate-500">الدرجة</span>
-                            <span class="text-xl font-black <%= submission.score >= (quiz.totalMarks/2) ? 'text-emerald-600' : 'text-rose-600' %>">
-                                <%= submission.score %> / <%= quiz.totalMarks %>
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center flex-row-reverse">
-                            <span class="text-sm text-slate-500">الوقت المستغرق</span>
-                            <span class="text-sm font-bold text-slate-700">
-                                <% 
-                                    const timeTakenMins = submission.submittedAt ? ((new Date(submission.submittedAt).getTime() - new Date(submission.startedAt).getTime()) / 60000).toFixed(1) : 'N/A';
-                                %>
-                                <%= timeTakenMins %> دقيقة
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center flex-row-reverse">
-                            <span class="text-sm text-slate-500">تاريخ التسليم</span>
-                            <span class="text-sm font-bold text-slate-700">
-                                <%= new Date(submission.submittedAt || submission.startedAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Violations Card -->
-                <% 
-                    let violationsRaw = submission.violations;
-                    if (typeof violationsRaw === 'string') {
-                        try { violationsRaw = JSON.parse(violationsRaw); } catch(e) {}
-                    }
-                    const violationsList = Array.isArray(violationsRaw) ? violationsRaw : (violationsRaw && typeof violationsRaw === 'object' ? Object.entries(violationsRaw).map(([k,v]) => ({ type: k, details: v })) : []);
-                    const hasViolations = violationsList.length > 0;
-                %>
-                <div class="bg-white rounded-2xl border <%= hasViolations ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200' %> shadow-sm p-6">
-                    <h3 class="text-sm font-bold <%= hasViolations ? 'text-rose-700' : 'text-slate-500' %> uppercase tracking-wider mb-4">المخالفات المكتشفة</h3>
-                    <% if (!hasViolations) { %>
-                        <div class="flex items-center text-emerald-600 flex-row-reverse">
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span class="text-sm font-bold">لم يتم رصد أي مخالفات</span>
-                        </div>
-                    <% } else { %>
-                        <div class="space-y-3">
-                            <% violationsList.forEach(v => { %>
-                                <div class="bg-white border border-rose-200 rounded-lg p-3">
-                                    <div class="flex items-center text-rose-700 mb-1 flex-row-reverse">
-                                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                        <span class="text-xs font-black">
-                                            <% if (v.type === 'blur') { %>
-                                                تبديل التبويب
-                                            <% } else if (v.type === 'fullscreen') { %>
-                                                وضع ملء الشاشة
-                                            <% } else { %>
-                                                مخالفة: <%= v.type %>
-                                            <% } %>
-                                        </span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-500">
-                                        <% if (v.details && v.details.timestamp) { %>
-                                            <%= new Date(v.details.timestamp).toLocaleTimeString('ar-EG') %>
-                                        <% } else if (v.details) { %>
-                                            <%= typeof v.details === 'object' ? JSON.stringify(v.details) : v.details %>
-                                        <% } %>
-                                    </p>
-                                </div>
-                            <% }) %>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
-
-            <!-- Answers List -->
-            <div class="md:col-span-2 space-y-6">
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-right">
-                    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50">
-                        <h3 class="text-lg font-bold text-slate-900">إجابات الطالب</h3>
-                    </div>
-                    
-                    <div class="divide-y divide-slate-100">
-                        <% 
-                            let answers = {};
-                            if (submission.answers) {
-                                answers = typeof submission.answers === 'string' ? JSON.parse(submission.answers) : submission.answers;
-                            }
-                        %>
-                        <% quiz.questions.forEach((q, index) => { %>
-                            <% 
-                                const studentAnswerStr = answers[q.id];
-                                const studentAnswer = studentAnswerStr !== undefined ? parseInt(studentAnswerStr) : -1;
-                                const isCorrect = studentAnswer === q.correctOption;
-                            %>
-                            <div class="p-6 transition-colors hover:bg-slate-50/50">
-                                <div class="flex items-start mb-4 flex-row-reverse">
-                                    <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 text-xs font-black flex items-center justify-center ml-4 shrink-0"><%= index + 1 %></span>
-                                    <div class="grow">
-                                        <div class="flex items-center justify-between mb-2 flex-row-reverse">
-                                            <p class="font-bold text-slate-900 leading-relaxed"><%= q.questionText %></p>
-                                            <span class="inline-flex items-center px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest <%= isCorrect ? 'bg-emerald-100 text-emerald-800' : (studentAnswer === -1 ? 'bg-slate-100 text-slate-600' : 'bg-rose-100 text-rose-800') %> ml-4 flex-row-reverse">
-                                                <% if(isCorrect) { %>
-                                                    <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                    صحيحة
-                                                <% } else if (studentAnswer === -1) { %>
-                                                    <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path></svg>
-                                                    تم التخطي
-                                                <% } else { %>
-                                                    <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                    خاطئة
-                                                <% } %>
-                                            </span>
-                                        </div>
-
-                                        <% if(q.imageUrl) { %>
-                                            <div class="mb-4">
-                                                <img src="<%= q.imageUrl %>" class="max-h-48 rounded-lg border border-slate-200 pointer-events-none" alt="Question Image">
-                                            </div>
-                                        <% } %>
-
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            <% q.options.forEach((opt, optIdx) => { %>
-                                                <% 
-                                                    let stateClasses = 'border-slate-200 text-slate-600 bg-white';
-                                                    if(optIdx === q.correctOption) {
-                                                        stateClasses = 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-500';
-                                                    } else if(optIdx === studentAnswer && !isCorrect) {
-                                                        stateClasses = 'border-rose-500 bg-rose-50 text-rose-800 ring-1 ring-rose-500';
-                                                    }
-                                                %>
-                                                <div class="relative p-3 border rounded-xl text-sm transition-all <%= stateClasses %> flex items-center justify-between flex-row-reverse">
-                                                    <span class="<%= (optIdx === q.correctOption || (optIdx === studentAnswer)) ? 'font-bold' : '' %>">
-                                                        <%= opt %>
-                                                    </span>
-                                                    
-                                                    <div class="flex items-center space-x-2 space-x-reverse">
-                                                        <% if(optIdx === studentAnswer) { %>
-                                                            <span class="text-[9px] font-black uppercase tracking-tighter opacity-70">إجابة الطالب</span>
-                                                        <% } %>
-                                                        <% if(optIdx === q.correctOption) { %>
-                                                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                        <% } else if(optIdx === studentAnswer && !isCorrect) { %>
-                                                            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                        <% } %>
-                                                    </div>
-                                                </div>
-                                            <% }) %>
-                                        </div>
-                                    </div>
-                                </div>
+            <div class="p-6 space-y-8">
+                <% quiz.questions.forEach((q, index) => { %>
+                    <% 
+                        const studentAnswerStr = answers[q.id];
+                        const studentAnswer = studentAnswerStr !== undefined ? parseInt(studentAnswerStr) : -1;
+                        const isCorrect = studentAnswer === q.correctOption;
+                        
+                        let badgeColor = '';
+                        let badgeText = '';
+                        let badgeIcon = '';
+                        
+                        if (studentAnswer === -1) {
+                            badgeColor = 'bg-slate-100 text-slate-600 border border-slate-200';
+                            badgeText = 'تم التخطي';
+                            badgeIcon = `<svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path></svg>`;
+                        } else if (isCorrect) {
+                            badgeColor = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+                            badgeText = 'صحيح';
+                            badgeIcon = `<svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                        } else {
+                            badgeColor = 'bg-rose-100 text-rose-800 border border-rose-200';
+                            badgeText = 'خاطئ';
+                            badgeIcon = `<svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+                        }
+                    %>
+                    <div class="border border-slate-100 rounded-xl p-5 bg-white shadow-sm relative overflow-hidden">
+                        <% if(isCorrect) { %>
+                            <div class="absolute top-0 right-0 w-1 h-full bg-emerald-500"></div>
+                        <% } else if (studentAnswer !== -1) { %>
+                            <div class="absolute top-0 right-0 w-1 h-full bg-rose-500"></div>
+                        <% } else { %>
+                            <div class="absolute top-0 right-0 w-1 h-full bg-slate-300"></div>
+                        <% } %>
+                        
+                        <div class="pr-3 text-right">
+                            <div class="flex justify-between items-start mb-4 flex-row-reverse">
+                                <h4 class="text-sm font-bold text-slate-900 leading-snug pl-4">
+                                    <span class="text-slate-400 ml-1"><%= index + 1 %>.</span> <%= q.questionText %>
+                                </h4>
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold shrink-0 <%= badgeColor %> flex-row-reverse">
+                                    <%- badgeIcon %> <span class="mr-1"><%= badgeText %></span>
+                                </span>
                             </div>
-                        <% }) %>
+
+                            <% if(q.imageUrl) { %>
+                                <div class="mb-4 text-right">
+                                    <img src="<%= q.imageUrl %>" alt="توضيح السؤال" class="max-h-48 rounded border border-slate-200 inline-block">
+                                </div>
+                            <% } %>
+
+                            <div class="space-y-2 mt-4 text-right">
+                                <% q.options.forEach((opt, optIndex) => { %>
+                                    <% 
+                                        const isSelected = studentAnswer === optIndex;
+                                        const isActualCorrect = q.correctOption === optIndex;
+                                        
+                                        let optClass = 'border-slate-200 text-slate-600 bg-white';
+                                        let icon = '';
+                                        
+                                        if (isSelected && isActualCorrect) {
+                                            optClass = 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold ring-1 ring-emerald-500';
+                                            icon = `<svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
+                                        } else if (isSelected && !isActualCorrect) {
+                                            optClass = 'border-rose-300 bg-rose-50 text-rose-900 font-bold';
+                                            icon = `<svg class="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>`;
+                                        } else if (!isSelected && isActualCorrect) {
+                                            optClass = 'border-emerald-200 bg-emerald-50 text-emerald-700 border-dashed';
+                                            icon = `<span class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-100 px-2 py-0.5 rounded">الإجابة الصحيحة</span>`;
+                                        } else {
+                                            // Empty circle for unselected options
+                                            icon = `<div class="w-4 h-4 rounded-full border border-slate-300 ml-0.5"></div>`;
+                                        }
+                                    %>
+                                    <div class="flex items-center justify-between p-3 rounded-lg border text-sm <%= optClass %> transition-colors flex-row-reverse text-right">
+                                        <span class="pr-2"><%= opt %></span>
+                                        <div class="pl-2 text-left flex items-center shrink-0">
+                                            <%- icon %>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </main>
-</body>
-</html>
+                <% }) %>
             </div>
             
         </div>

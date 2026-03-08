@@ -201,7 +201,13 @@ router.post('/teachers/:id/subscription', async (req, res) => {
             const expiresAt = new Date();
             expiresAt.setMonth(expiresAt.getMonth() + (parseInt(months) || 1));
             await prisma.subscription.create({
-                data: { teacherId, tier: tier || 'PREMIUM', status: 'active', expiresAt }
+                data: {
+                    teacherId,
+                    tier: (tier || 'PREMIUM'),
+                    status: 'active',
+                    startedAt: new Date(),
+                    expiresAt
+                }
             });
         } else if (action === 'cancel') {
             await prisma.subscription.updateMany({

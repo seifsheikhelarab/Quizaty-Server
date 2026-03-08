@@ -1,14 +1,36 @@
 import "dotenv/config";
-import prisma from "../prisma.js";
+import prisma from "../prisma";
 import bcrypt from "bcrypt";
 import { faker } from "@faker-js/faker";
 
 const HASHED_PASSWORD = bcrypt.hashSync("password123", 10);
 
+const SHORT_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+const shortCodesByClass = new Map<string, Set<string>>();
+
+const generateShortCodeForClass = (classId: string): string => {
+    let used = shortCodesByClass.get(classId);
+    if (!used) {
+        used = new Set<string>();
+        shortCodesByClass.set(classId, used);
+    }
+
+    while (true) {
+        const code = Array.from({ length: 4 }, () => SHORT_CODE_CHARS[Math.floor(Math.random() * SHORT_CODE_CHARS.length)]).join("");
+        if (!used.has(code)) {
+            used.add(code);
+            return code;
+        }
+    }
+};
+
 async function main() {
     console.log("🌱 Seeding database...");
 
     // Clear existing data (order matters for foreign keys)
+    await prisma.subscription.deleteMany();
+    await prisma.admin.deleteMany();
     await prisma.submission.deleteMany();
     await prisma.question.deleteMany();
     await prisma.quiz.deleteMany();
@@ -68,13 +90,15 @@ async function main() {
         } while (usedPhones.has(phone));
         usedPhones.add(phone);
 
+        const classForStudent = faker.helpers.arrayElement(allClasses);
         const student = await prisma.student.create({
             data: {
                 name: faker.person.fullName(),
                 phone,
                 password: HASHED_PASSWORD,
                 parentPhone: faker.phone.number({ style: "international" }),
-                classId: faker.helpers.arrayElement(allClasses).id,
+                classId: classForStudent.id,
+                shortCode: generateShortCodeForClass(classForStudent.id),
             },
         });
         students.push(student);
@@ -217,6 +241,7 @@ async function main() {
             password: HASHED_PASSWORD,
             parentPhone: "+15550000003",
             classId: testClass.id,
+            shortCode: generateShortCodeForClass(testClass.id),
         },
     });
 
@@ -243,8 +268,7 @@ async function main() {
     console.log(`  ✓ Created test accounts`);
 
     // Create a default super admin
-    await prisma.admin.deleteMany();
-    const testAdmin = await prisma.admin.create({
+    await prisma.admin.create({
         data: {
             email: "admin@test.com",
             password: HASHED_PASSWORD,
@@ -255,8 +279,7 @@ async function main() {
     console.log(`  ✓ Created super admin: admin@test.com`);
 
     // Create sample subscriptions for teachers
-    await prisma.subscription.deleteMany();
-    for (const teacher of teachers) {
+    for (const teacher of [...teachers, testTeacher]) {
         const tier = faker.helpers.arrayElement(['BASIC', 'PREMIUM']);
         const status = faker.helpers.arrayElement(['active', 'active', 'cancelled']);
         const expiresAt = new Date();
@@ -271,7 +294,7 @@ async function main() {
             }
         });
     }
-    console.log(`  ✓ Created sample subscriptions`);
+    console.log(`  ✓ Created sample subscriptions for all teachers`);
 
     console.log("\n✅ Seeding complete!");
     console.log("\nTest login credentials (password: password123):");

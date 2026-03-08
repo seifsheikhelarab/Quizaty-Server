@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,27 +10,9 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 selection:bg-indigo-100 selection:text-indigo-900">
 
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <a href="/teacher/dashboard" class="flex items-center space-x-3 space-x-reverse">
-                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3">
-                        <svg class="w-5 h-5 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
-                    </div>
-                    <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
-                </a>
-            </div>
-            
-            <div class="flex items-center space-x-6 space-x-reverse">
-                <a href="/teacher/quizzes" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center">
-                    <svg class="w-4 h-4 ml-1 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    العودة للاختبارات
-                </a>
-            </div>
-        </div>
-    </header>
+    <%- include('../partials/teacher_nav', { backUrl: '/teacher/quizzes', backText: 'العودة للاختبارات' }) %>
 
-    <main class="max-w-6xl mx-auto px-6 py-12">
+    <main class="max-w-6xl mx-auto px-6 py-12 text-right">
         <% 
             const now = new Date();
             const isUpcoming = now < quiz.startTime;
@@ -46,12 +28,12 @@
                 statusText = 'منتهي';
                 statusColor = 'bg-slate-100 text-slate-800';
             } else {
-                statusText = 'مفتوح';
+                statusText = 'نشط حالياً';
                 statusColor = 'bg-emerald-100 text-emerald-800';
             }
         %>
 
-        <div class="flex flex-col md:flex-row-reverse md:items-start justify-between mb-8 pb-6 border-b border-slate-200 text-right">
+        <div class="flex flex-col md:flex-row md:items-start justify-between mb-8 pb-6 border-b border-slate-200">
             <div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <%= statusColor %> mb-3">
                     <%= statusText %>
@@ -60,9 +42,9 @@
                 <% if(quiz.description) { %>
                     <p class="text-slate-500 mt-2 text-base"><%= quiz.description %></p>
                 <% } %>
-                <div class="mt-4 flex items-center md:justify-end space-x-6 space-x-reverse text-sm text-slate-500">
+                <div class="mt-4 flex items-center space-x-6 space-x-reverse text-sm text-slate-500">
                     <div class="flex items-center">
-                        <svg class="w-4 h-4 ml-1.5 min-w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <svg class="w-4 h-4 ml-1.5 min-w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z"></path></svg>
                         <%= new Date(quiz.startTime).toLocaleDateString('ar-EG') %> - <%= new Date(quiz.endTime).toLocaleDateString('ar-EG') %>
                     </div>
                     <div class="flex items-center">
@@ -75,7 +57,7 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-6 md:mt-0 flex flex-wrap items-center gap-3 md:justify-start">
+            <div class="mt-6 md:mt-0 flex flex-wrap items-center gap-3 flex-row-reverse">
                 <% if(isUpcoming) { %>
                     <a href="/teacher/quizzes/<%= quiz.id %>/edit" class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 text-sm font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors">
                         تعديل الاختبار
@@ -89,10 +71,17 @@
                 
                 <% if(isEnded) { %>
                     <form action="/teacher/quizzes/<%= quiz.id %>/release-results" method="POST">
-                        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors">
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                            نشر النتائج
-                        </button>
+                        <% if(quiz.showResults) { %>
+                            <button type="button" disabled class="inline-flex items-center justify-center px-4 py-2 border border-emerald-500/30 text-sm font-bold rounded-lg text-emerald-700 bg-emerald-50 cursor-default">
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                تم إصدار النتائج
+                            </button>
+                        <% } else { %>
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors">
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                إصدار النتائج
+                            </button>
+                        <% } %>
                     </form>
                 <% } %>
             </div>
@@ -101,20 +90,20 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Main Content: Analysis & Submissions -->
-            <div class="lg:col-span-2 space-y-8 order-2 lg:order-1">
+            <div class="lg:col-span-2 space-y-8">
                 
                 <!-- Submissions Analysis -->
                 <% if (submissions.length > 0) { %>
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-right">
                         <div class="px-6 py-5 border-b border-slate-100 bg-slate-50">
-                            <h3 class="text-lg font-bold text-slate-900">تحليل التسليمات</h3>
+                            <h3 class="text-lg font-bold text-slate-900">تحليل المشاركات</h3>
                         </div>
                         <div class="p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Score Stats -->
+                                <!-- Score Analysis -->
                                 <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                                     <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6">تحليل الدرجات</h3>
-                                    <div class="grid grid-cols-3 gap-4">
+                                    <div class="grid grid-cols-3 gap-4 flex-row-reverse">
                                         <div class="text-center">
                                             <p class="text-3xl font-black text-emerald-600"><%= analysis.bestScore %></p>
                                             <p class="text-xs font-medium text-slate-500 mt-1">الأعلى</p>
@@ -125,13 +114,13 @@
                                         </div>
                                         <div class="text-center">
                                             <p class="text-3xl font-black text-rose-600"><%= analysis.worstScore %></p>
-                                            <p class="text-xs font-medium text-slate-500 mt-1">الأدنى</p>
+                                            <p class="text-xs font-medium text-slate-500 mt-1">الأقل</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Participation & Time -->
-                                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm text-right">
                                     <div class="flex items-center justify-between mb-6 flex-row-reverse">
                                         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">إحصائيات الاختبار</h3>
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">
@@ -158,17 +147,17 @@
                     </div>
                 <% } else { %>
                     <div class="bg-blue-50 bg-opacity-50 rounded-2xl border border-blue-100 p-6 text-center">
-                        <p class="text-sm text-blue-700 font-medium tracking-wide">سيظهر التحليل هنا بمجرد قيام الطلاب بتسليم الاختبار.</p>
+                        <p class="text-sm text-blue-700 font-medium tracking-wide">سيظهر التحليل هنا بمجرد مشاركة الطلاب في الاختبار.</p>
                     </div>
                 <% } %>
 
                 <!-- Submissions Cards -->
                 <div class="space-y-4 text-right" id="submissions">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4 px-1">التسليمات (<%= submissions.length %>)</h3>
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 px-1">المشاركات (<%= submissions.length %>)</h3>
                     
                     <% if (submissions.length === 0) { %>
                         <div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500 text-sm shadow-sm">
-                            لم يتم استلام أي تسليمات بعد.
+                            لم يتم استلام أي مشاركات بعد.
                         </div>
                     <% } else { %>
                         <% submissions.forEach((sub, index) => { %>
@@ -183,15 +172,15 @@
                                 }
                             %>
                             <div class="bg-white rounded-xl border <%= hasViolations ? 'border-amber-300 shadow-amber-50' : 'border-slate-200 shadow-sm' %> p-5 flex flex-col md:flex-row-reverse md:items-center justify-between gap-4 transition-all hover:shadow-md">
-                                <div class="flex items-center space-x-4 space-x-reverse text-right">
+                                <div class="flex items-center space-x-4 space-x-reverse">
                                     <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold shrink-0">
                                         <%= sub.student.name.charAt(0).toUpperCase() %>
                                     </div>
-                                    <div class="grow">
+                                    <div class="text-right">
                                         <h4 class="font-bold text-slate-900 group">
                                             <a href="/teacher/students/<%= sub.student.id %>" class="hover:text-indigo-600 transition-colors"><%= sub.student.name %></a>
                                             <% if(hasViolations) { %>
-                                                <span class="inline-flex items-center px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800 ml-4 flex-row-reverse">
+                                                <span class="mr-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 uppercase tracking-widest">
                                                     تم اكتشاف مخالفات
                                                 </span>
                                             <% } %>
@@ -205,8 +194,8 @@
                                         <p class="text-xl font-black <%= scoreColor %>"><%= sub.score %><span class="text-sm font-bold text-slate-400">/<%= quiz.totalMarks %></span></p>
                                         <p class="text-[10px] uppercase font-bold text-slate-400 mt-0.5">الدرجة</p>
                                     </div>
-                                    <div class="text-center w-16">
-                                        <p class="text-lg font-bold text-slate-700"><%= timeTakenMins %>د</p>
+                                    <div class="text-center w-20">
+                                        <p class="text-lg font-bold text-slate-700"><%= timeTakenMins %> د</p>
                                         <p class="text-[10px] uppercase font-bold text-slate-400 mt-0.5">الوقت</p>
                                     </div>
                                     <div class="flex items-center space-x-2 space-x-reverse">
@@ -232,11 +221,11 @@
             </div>
 
             <!-- Sidebar: Leaderboard & Questions -->
-            <div class="space-y-8 order-1 lg:order-2">
+            <div class="space-y-8 text-right">
                 
                 <!-- Leaderboard -->
                 <% if(leaderboard.length > 0) { %>
-                <div class="bg-indigo-600 rounded-2xl shadow-lg overflow-hidden text-white relative text-right">
+                <div class="bg-indigo-600 rounded-2xl shadow-lg overflow-hidden text-white relative">
                     <!-- decorative dots -->
                     <div class="absolute top-0 left-0 -ml-8 -mt-8 opacity-20">
                         <svg width="100" height="100" viewBox="0 0 100 100" fill="currentColor">
@@ -252,10 +241,10 @@
                         </svg>
                     </div>
 
-                    <div class="px-6 py-5 border-b border-indigo-700/50 relative z-10 flex items-center justify-end">
-                        <h3 class="flex items-center text-lg font-black text-white">
+                    <div class="px-6 py-5 border-b border-indigo-700/50 relative z-10 text-right">
+                        <h3 class="flex items-center justify-end text-lg font-black text-white">
                             لوحة الصدارة
-                            <svg class="w-5 h-5 text-yellow-400 ml-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2l2.35 4.77 5.26.77-3.81 3.7.9 5.24L10 14.01l-4.7 2.47.9-5.24-3.81-3.7 5.26-.77L10 2z" clip-rule="evenodd"></path></svg>
+                            <svg class="w-5 h-5 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2l2.35 4.77 5.26.77-3.81 3.7.9 5.24L10 14.01l-4.7 2.47.9-5.24-3.81-3.7 5.26-.77L10 2z" clip-rule="evenodd"></path></svg>
                         </h3>
                     </div>
                     <div class="p-6 relative z-10 space-y-4">
@@ -270,9 +259,9 @@
                                 <div class="font-black text-xl <%= classMedal %> w-6 text-center shrink-0">
                                     <%= index + 1 %>
                                 </div>
-                                <div class="mr-3 flex-grow text-right">
+                                <div class="mr-3 grow text-right">
                                     <p class="font-bold text-sm"><%= sub.student.name %></p>
-                                    <p class="text-[10px] text-indigo-200 mt-0.5"><%= ((sub.submittedAt.getTime() - sub.startedAt.getTime()) / 60000).toFixed(1) %>د</p>
+                                    <p class="text-[10px] text-indigo-200 mt-0.5"><%= ((sub.submittedAt.getTime() - sub.startedAt.getTime()) / 60000).toFixed(1) %> دقيقة</p>
                                 </div>
                                 <div class="text-left shrink-0">
                                     <p class="font-black text-lg"><%= sub.score %><span class="text-indigo-300 text-xs">/<%= quiz.totalMarks %></span></p>
@@ -290,14 +279,14 @@
                     </div>
                     <div class="overflow-y-auto max-h-96">
                         <% if (quiz.questions.length === 0) { %>
-                            <div class="p-6 text-center text-slate-500 text-sm">لم يتم إضافة أسئلة لهذا الاختبار.</div>
+                            <div class="p-6 text-center text-slate-500 text-sm">لا توجد أسئلة مضافة لهذا الاختبار.</div>
                         <% } else { %>
                             <ul class="divide-y divide-slate-100">
                                 <% quiz.questions.forEach((q, i) => { %>
                                     <li class="p-4 hover:bg-slate-50 transition-colors">
                                         <div class="flex items-start flex-row-reverse">
                                             <span class="w-6 h-6 rounded bg-slate-100 text-slate-500 text-xs font-bold flex items-center justify-center ml-3 mt-0.5 shrink-0"><%= i + 1 %></span>
-                                            <div class="grow">
+                                            <div class="text-right">
                                                 <p class="text-sm font-bold text-slate-900 mb-2 leading-snug"><%= q.questionText %></p>
                                                 <% if(q.imageUrl) { %>
                                                     <a href="<%= q.imageUrl %>" target="_blank" class="inline-flex items-center px-2 py-1 bg-slate-100 text-xs text-slate-600 rounded font-medium mb-3 hover:bg-slate-200 transition-colors flex-row-reverse">
@@ -307,7 +296,7 @@
                                                 <% } %>
                                                 <div class="grid grid-cols-1 gap-1">
                                                     <% q.options.forEach((opt, optIndex) => { %>
-                                                        <div class="text-xs px-2.5 py-1.5 rounded-md flex items-center justify-between flex-row-reverse <%= optIndex === q.correctOption ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold' : 'bg-white text-slate-600 border border-slate-200' %>">
+                                                        <div class="text-xs px-2.5 py-1.5 rounded-md flex items-center justify-between flex-row-reverse border <%= optIndex === q.correctOption ? 'bg-emerald-50 border-emerald-200 font-bold' : 'bg-white text-slate-600 border-slate-200' %>">
                                                             <span><%= opt %></span>
                                                             <% if(optIndex === q.correctOption) { %>
                                                                 <svg class="w-3 h-3 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>

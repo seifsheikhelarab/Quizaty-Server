@@ -10,30 +10,35 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 selection:bg-indigo-100 selection:text-indigo-900">
 
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <a href="/teacher/dashboard" class="flex items-center space-x-3 space-x-reverse">
-                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3">
-                        <svg class="w-5 h-5 text-white rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>
-                    </div>
-                    <h1 class="text-xl font-black tracking-tight text-slate-900">QuizMaster</h1>
-                </a>
-            </div>
-            
-            <div class="flex items-center space-x-6 space-x-reverse">
-                <a href="/teacher/quizzes" class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center">
-                    <svg class="w-4 h-4 ml-1 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    العودة للاختبارات
-                </a>
-            </div>
-        </div>
-    </header>
+    <%- include('../partials/teacher_nav', { backUrl: '/teacher/quizzes', backText: 'العودة للاختبارات' }) %>
 
     <main class="max-w-4xl mx-auto px-6 py-12">
         <div class="mb-8 text-right">
             <h2 class="text-3xl font-black text-slate-900 tracking-tight">إنشاء اختبار</h2>
             <p class="text-slate-500 mt-2 text-lg">قم بتحديد إعدادات الاختبار وإضافة أسئلتك.</p>
+            <% if (limits) { %>
+            <div class="mt-4 bg-slate-900 text-slate-50 rounded-2xl px-4 py-3 text-xs flex items-center justify-between flex-row-reverse">
+                <div class="text-right">
+                    <p class="font-semibold tracking-wide uppercase text-[11px] text-slate-400">خطة المعلم</p>
+                    <p class="font-bold text-sm mt-0.5"><%= subscription ? subscription.tier : 'FREE_TRIAL' %></p>
+                </div>
+                <div class="flex gap-4 text-[11px] flex-row-reverse">
+                    <% if (limits.maxQuizzesPerClassPerMonth !== null) { %>
+                        <div class="text-right">
+                            <p class="text-slate-400">حد الاختبارات</p>
+                            <p class="font-semibold">
+                                حتى <%= limits.maxQuizzesPerClassPerMonth %> اختبار لكل فصل في الشهر.
+                            </p>
+                        </div>
+                    <% } else { %>
+                        <div class="text-right">
+                            <p class="text-slate-400">حد الاختبارات</p>
+                            <p class="font-semibold">عدد غير محدود من الاختبارات لكل فصل.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            <% } %>
         </div>
 
         <form action="/teacher/quizzes/create" method="POST" enctype="multipart/form-data" class="space-y-8">

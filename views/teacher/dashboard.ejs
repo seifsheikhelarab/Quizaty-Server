@@ -1,322 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title><%= title %></title>
         <link href="/css/output.css" rel="stylesheet" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap"
-            rel="stylesheet"
-        />
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&display=swap" rel="stylesheet">
         <style>
-            body {
-                font-family: "Cairo", sans-serif;
-            }
+            body { font-family: 'Cairo', sans-serif; }
         </style>
     </head>
-    <body
-        class="bg-slate-50 min-h-screen text-slate-800 selection:bg-indigo-100 selection:text-indigo-900"
-    >
+    <body class="bg-slate-50 min-h-screen text-slate-800 selection:bg-indigo-100 selection:text-indigo-900">
         <!-- Header -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
-            <div
-                class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between"
-            >
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <a
-                        href="/teacher/dashboard"
-                        class="flex items-center space-x-3 space-x-reverse"
-                    >
-                        <div
-                            class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center transform -rotate-3"
-                        >
-                            <svg
-                                class="w-5 h-5 text-white rotate-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 14l9-5-9-5-9 5 9 5z"
-                                ></path>
-                            </svg>
-                        </div>
-                        <h1
-                            class="text-xl font-black tracking-tight text-slate-900"
-                        >
-                            QuizMaster
-                        </h1>
-                    </a>
-                    <span
-                        class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-md border border-indigo-100"
-                        >معلم</span
-                    >
-                </div>
+        <%- include('../partials/teacher_nav', { active: 'dashboard' }) %>
 
-                <div class="flex items-center space-x-6 space-x-reverse">
-                    <a
-                        href="/teacher/dashboard"
-                        class="text-sm font-bold text-slate-900"
-                        >لوحة التحكم</a
-                    >
-                    <a
-                        href="/teacher/quizzes"
-                        class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
-                        >الاختبارات</a
-                    >
-                    <a
-                        href="/teacher/classes"
-                        class="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
-                        >الفصول</a
-                    >
-                    <div class="h-6 w-px bg-slate-200"></div>
-                    <div class="flex items-center space-x-3 space-x-reverse">
-                        <div
-                            class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold border border-slate-200"
-                        >
-                            <%= teacher.name ?
-                            teacher.name.charAt(0).toUpperCase() : 'م' %>
-                        </div>
-                    </div>
-                    <a
-                        href="/auth/logout"
-                        class="text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors flex items-center group"
-                    >
-                        <span>تسجيل الخروج</span>
-                        <svg
-                            class="w-4 h-4 mr-1.5 opacity-50 group-hover:opacity-100 transition-opacity rotate-180"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                            ></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-        </header>
-
-        <main class="max-w-6xl mx-auto px-6 py-12">
-            <div class="mb-12 text-right">
+        <main class="max-w-6xl mx-auto px-6 py-12 text-right">
+            <div class="mb-12">
                 <h2 class="text-3xl font-black text-slate-900 tracking-tight">
                     مرحباً بك، <%= teacher.name || 'معلم' %>! 👋
                 </h2>
                 <p class="text-slate-500 mt-2 text-lg">
                     إليك نظرة عامة على نشاطك التعليمي.
                 </p>
+                <div class="mt-4 inline-flex items-center px-4 py-2 rounded-xl text-xs font-bold flex-row-reverse
+                    <%= subscription ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200' %>">
+                    <% if (subscription) { %>
+                        <% if (subscription.expiresAt) { %>
+                            <span class="mr-3 text-[11px] text-slate-500">حتى <%= new Date(subscription.expiresAt).toLocaleDateString('ar-EG') %></span>
+                            <span class="font-black mr-1"><%= subscription.tier %></span>
+                        <% } %>
+                        <span class="ml-1">الباقة:</span>
+                    <% } else { %>
+                        <span class="ml-1">الباقة:</span>
+                        <span class="font-black mr-1">تجربة مجانية</span>
+                        <span class="mr-3 text-[11px] text-slate-500">قم بالترقية لفتح المزيد من الفصول والطلاب والاختبارات.</span>
+                    <% } %>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Total Quizzes Card -->
-                <a
-                    href="/teacher/quizzes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-200 group text-right"
-                >
-                    <div
-                        class="flex items-center justify-between mb-4 flex-row-reverse"
-                    >
-                        <div
-                            class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform"
-                        >
-                            <svg
-                                class="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                ></path>
+                <a href="/teacher/quizzes" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-200 group">
+                    <div class="flex items-center justify-between mb-4 flex-row-reverse">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-indigo-400 transition-colors rotate-180"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 5l7 7-7 7"
-                            ></path>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:text-indigo-400 transition-colors rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-4xl font-black text-slate-900">
-                            <%= stats.quizzes %>
-                        </h3>
-                        <p
-                            class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
-                        >
-                            إجمالي الاختبارات
-                        </p>
+                        <h3 class="text-4xl font-black text-slate-900"><%= stats.quizzes %></h3>
+                        <p class="text-sm font-bold text-slate-500 mt-1 uppercase tracking-wide">إجمالي الاختبارات</p>
                     </div>
                 </a>
 
                 <!-- Total Classes Card -->
-                <a
-                    href="/teacher/classes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:emerald-300 transition-all duration-200 group text-right"
-                >
-                    <div
-                        class="flex items-center justify-between mb-4 flex-row-reverse"
-                    >
-                        <div
-                            class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform"
-                        >
-                            <svg
-                                class="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                                ></path>
+                <a href="/teacher/classes" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:emerald-300 transition-all duration-200 group">
+                    <div class="flex items-center justify-between mb-4 flex-row-reverse">
+                        <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                             </svg>
                         </div>
-                        <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-emerald-400 transition-colors rotate-180"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 5l7 7-7 7"
-                            ></path>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:text-emerald-400 transition-colors rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-4xl font-black text-slate-900">
-                            <%= stats.classes %>
-                        </h3>
-                        <p
-                            class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
-                        >
-                            إجمالي الفصول
-                        </p>
+                        <h3 class="text-4xl font-black text-slate-900"><%= stats.classes %></h3>
+                        <p class="text-sm font-bold text-slate-500 mt-1 uppercase tracking-wide">إجمالي الفصول</p>
                     </div>
                 </a>
 
                 <!-- Total Students Card -->
-                <a
-                    href="/teacher/classes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 group text-right"
-                >
-                    <div
-                        class="flex items-center justify-between mb-4 flex-row-reverse"
-                    >
-                        <div
-                            class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"
-                        >
-                            <svg
-                                class="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                                ></path>
+                <a href="/teacher/classes" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 group">
+                    <div class="flex items-center justify-between mb-4 flex-row-reverse">
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                             </svg>
                         </div>
-                        <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors rotate-180"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 5l7 7-7 7"
-                            ></path>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-4xl font-black text-slate-900">
-                            <%= stats.students %>
-                        </h3>
-                        <p
-                            class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
-                        >
-                            إجمالي الطلاب المسجلين
-                        </p>
+                        <h3 class="text-4xl font-black text-slate-900"><%= stats.students %></h3>
+                        <p class="text-sm font-bold text-slate-500 mt-1 uppercase tracking-wide">الطلاب المسجلين</p>
                     </div>
                 </a>
 
                 <!-- Total Submissions Card -->
-                <a
-                    href="/teacher/quizzes"
-                    class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all duration-200 group text-right"
-                >
-                    <div
-                        class="flex items-center justify-between mb-4 flex-row-reverse"
-                    >
-                        <div
-                            class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform"
-                        >
-                            <svg
-                                class="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                ></path>
+                <a href="/teacher/quizzes" class="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all duration-200 group">
+                    <div class="flex items-center justify-between mb-4 flex-row-reverse">
+                        <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <svg
-                            class="w-5 h-5 text-slate-300 group-hover:text-amber-400 transition-colors rotate-180"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 5l7 7-7 7"
-                            ></path>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:text-amber-400 transition-colors rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-4xl font-black text-slate-900">
-                            <%= stats.submissions %>
-                        </h3>
-                        <p
-                            class="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wide"
-                        >
-                            إجمالي الردود
-                        </p>
+                        <h3 class="text-4xl font-black text-slate-900"><%= stats.submissions %></h3>
+                        <p class="text-sm font-bold text-slate-500 mt-1 uppercase tracking-wide">إجمالي التسليمات</p>
                     </div>
                 </a>
             </div>

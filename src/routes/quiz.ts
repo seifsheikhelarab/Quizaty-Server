@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import prisma from '../prisma.js';
-import { NotFoundError, BadRequestError } from '../utils/errors.js';
-import { seededShuffle } from '../utils/shuffle.js';
+import prisma from '../prisma';
+import { NotFoundError, BadRequestError } from '../utils/errors';
+import { seededShuffle } from '../utils/shuffle';
 
 const router = Router();
 
@@ -159,18 +159,7 @@ router.get('/:studentId/:quizId/result', async (req, res) => {
 
     if (!submission) throw new NotFoundError('Submission');
 
-    const result = {
-        score: submission.score,
-        totalQuestions: submission.quiz.questions.length
-    };
-
-    res.render('student/result', {
-        title: 'نتائج الاختبار',
-        submission,
-        quiz: submission.quiz,
-        result,
-        layout: false
-    });
+    res.render('student/result', { title: 'Submission Details', submission, layout: false });
 });
 
 export default router;

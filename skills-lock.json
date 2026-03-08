@@ -15,6 +15,11 @@
       "source": "prisma/skills",
       "sourceType": "github",
       "computedHash": "72e2360923e949261a15ca1dbcfac5662ec5e851f6045ffb13163a55a083bcea"
+    },
+    "vercel-cli": {
+      "source": "vercel/vercel",
+      "sourceType": "github",
+      "computedHash": "adfe68ae7d8bd3c88c4770f10e73e22c65fa57e93efd6cf2e58118c6f1908855"
     }
   }
 }

@@ -31,6 +31,9 @@ model Student {
   class       Class?       @relation(fields: [classId], references: [id])
   classId     String?
   password    String?
+  shortCode   String?
+
+  @@unique([classId, shortCode])
 }
 
 model Quiz {
@@ -46,6 +49,7 @@ model Quiz {
   questions   Question[]
   submissions Submission[]
   classes     Class[]
+  showResults Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -86,32 +90,36 @@ model Class {
 }
 
 enum SubscriptionTier {
+  FREE_TRIAL
   BASIC
+  PRO
   PREMIUM
 }
 
-model Subscription {
-  id        String    @id @default(cuid())
-  teacherId String
-  tier      String
-  status    String    @default("active")
-  expiresAt DateTime?
-  teacher   Teacher   @relation(fields: [teacherId], references: [id])
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+enum SubscriptionStatus {
+  active
+  cancelled
+  expired
 }
 
-enum AdminRole {
-  ADMIN
-  SUPER_ADMIN
+model Subscription {
+  id        String             @id @default(cuid())
+  teacherId String
+  teacher   Teacher            @relation(fields: [teacherId], references: [id])
+  tier      SubscriptionTier
+  status    SubscriptionStatus @default(active)
+  startedAt DateTime           @default(now())
+  expiresAt DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 }
 
 model Admin {
-  id        String    @id @default(cuid())
-  email     String    @unique
+  id        String   @id @default(cuid())
+  email     String   @unique
   password  String
   name      String?
-  role      AdminRole @default(ADMIN)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

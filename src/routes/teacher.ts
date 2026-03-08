@@ -1,11 +1,59 @@
 import { Router } from 'express';
-import prisma from '../prisma.js';
-import { authenticateTeacher } from '../middleware.js';
+import prisma from '../prisma';
+import { authenticateTeacher } from '../middleware';
 import multer from 'multer';
-import { storage } from '../utils/cloud_storage.js';
+import { sendWhatsAppMessage } from '../services/whatsapp';
+import { getActiveSubscriptionForTeacher, getPlanLimits } from '../services/subscription';
 
 const router = Router();
-const upload = multer({ storage });
+const upload = multer({ dest: 'uploads/' });
+
+const SHORT_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+const generateShortCodeForClass = async (classId: string): Promise<string> => {
+    // Try a few times to generate a unique short code within this class
+    for (let attempt = 0; attempt < 5; attempt++) {
+        const code = Array.from({ length: 4 }, () => SHORT_CODE_CHARS[Math.floor(Math.random() * SHORT_CODE_CHARS.length)]).join('');
+        const existing = await prisma.student.findFirst({
+            where: { classId, shortCode: code }
+        });
+        if (!existing) {
+            return code;
+        }
+    }
+    throw new Error('Unable to generate unique short code for class');
+};
+
+const addOrMoveStudentToClass = async (classId: string, className: string, name: string, phone: string) => {
+    let student = await prisma.student.findUnique({ where: { phone } });
+
+    if (student) {
+        let data: any = { classId };
+        if (!student.shortCode) {
+            const shortCode = await generateShortCodeForClass(classId);
+            data.shortCode = shortCode;
+        }
+        student = await prisma.student.update({
+            where: { id: student.id },
+            data
+        });
+    } else {
+        const shortCode = await generateShortCodeForClass(classId);
+        student = await prisma.student.create({
+            data: {
+                name,
+                phone,
+                classId,
+                shortCode
+            }
+        });
+    }
+
+    const message = `You have been added to class "${className}". Your student code for this class is: ${student.shortCode}`;
+    await sendWhatsAppMessage(student.phone, message);
+
+    return student;
+};
 
 router.use(authenticateTeacher);
 
@@ -14,7 +62,7 @@ router.get('/dashboard', async (req, res) => {
     const teacher = (req as any).teacher;
 
     try {
-        const [quizzesCount, studentsCount, submissionsCount, classesCount] = await Promise.all([
+        const [quizzesCount, studentsCount, submissionsCount, classesCount, activeSubscription] = await Promise.all([
             prisma.quiz.count({ where: { teacherId: teacher.id } }),
             prisma.student.count({
                 where: {
@@ -30,8 +78,12 @@ router.get('/dashboard', async (req, res) => {
                     }
                 }
             }),
-            prisma.class.count({ where: { teacherId: teacher.id } })
+            prisma.class.count({ where: { teacherId: teacher.id } }),
+            getActiveSubscriptionForTeacher(teacher.id)
         ]);
+
+        const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
+        const limits = getPlanLimits(plan as any);
 
         res.render('teacher/dashboard', {
             title: 'Teacher Dashboard',
@@ -41,7 +93,9 @@ router.get('/dashboard', async (req, res) => {
                 students: studentsCount,
                 submissions: submissionsCount,
                 classes: classesCount
-            }
+            },
+            subscription: activeSubscription,
+            limits
         });
     } catch (error) {
         console.error("Dashboard error:", error);
@@ -68,7 +122,26 @@ router.get('/classes', async (req, res) => {
 
 router.get('/classes/create', async (req, res) => {
     const teacher = (req as any).teacher;
-    res.render('teacher/create_class', { title: 'Create New Class', teacher });
+    const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+    const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
+    const limits = getPlanLimits(plan as any);
+
+    const [classCount, totalStudents] = await Promise.all([
+        prisma.class.count({ where: { teacherId: teacher.id } }),
+        prisma.student.count({
+            where: {
+                class: { teacherId: teacher.id }
+            }
+        })
+    ]);
+
+    res.render('teacher/create_class', {
+        title: 'Create New Class',
+        teacher,
+        subscription: activeSubscription,
+        limits,
+        usage: { classCount, totalStudents }
+    });
 });
 
 router.post('/classes/create', async (req, res) => {
@@ -80,6 +153,17 @@ router.post('/classes/create', async (req, res) => {
     }
 
     try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
+        const limits = getPlanLimits(plan as any);
+
+        if (limits.maxClasses !== null) {
+            const currentClasses = await prisma.class.count({ where: { teacherId: teacher.id } });
+            if (currentClasses >= limits.maxClasses) {
+                return res.status(403).send('Class limit reached for your current plan. Please upgrade your subscription.');
+            }
+        }
+
         const classData = await prisma.class.create({
             data: {
                 name: name.trim(),
@@ -91,17 +175,21 @@ router.post('/classes/create', async (req, res) => {
         if (studentPhones && typeof studentPhones === 'string') {
             const phones = studentPhones.split('\n').map((p: string) => p.trim()).filter(Boolean);
             for (const phone of phones) {
-                let student = await prisma.student.findUnique({ where: { phone } });
-                if (student) {
-                    await prisma.student.update({
-                        where: { id: student.id },
-                        data: { classId: classData.id }
+                if (limits.maxTotalStudents !== null) {
+                    const totalForTeacher = await prisma.student.count({
+                        where: { class: { teacherId: teacher.id } }
                     });
-                } else {
-                    await prisma.student.create({
-                        data: { name: 'Student', phone, classId: classData.id }
-                    });
+                    if (totalForTeacher >= limits.maxTotalStudents) {
+                        break;
+                    }
                 }
+                if (limits.maxStudentsPerClass !== null) {
+                    const count = await prisma.student.count({ where: { classId: classData.id } });
+                    if (count >= limits.maxStudentsPerClass) {
+                        break;
+                    }
+                }
+                await addOrMoveStudentToClass(classData.id, classData.name, 'Student', phone);
             }
         }
         res.redirect('/teacher/classes');
@@ -214,19 +302,27 @@ router.post('/classes/:id/students/add', async (req, res) => {
 
         if (!name || !phone) return res.status(400).send("Name and phone are required.");
 
-        let student = await prisma.student.findUnique({ where: { phone } });
-        if (student) {
-            // Associate existing to class
-            await prisma.student.update({
-                where: { id: student.id },
-                data: { classId }
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
+        const limits = getPlanLimits(plan as any);
+
+        if (limits.maxTotalStudents !== null) {
+            const totalForTeacher = await prisma.student.count({
+                where: { class: { teacherId: teacher.id } }
             });
-        } else {
-            // Pre-register new student explicitly tied to this class
-            await prisma.student.create({
-                data: { name, phone, classId }
-            });
+            if (totalForTeacher >= limits.maxTotalStudents) {
+                return res.status(403).send('Total student limit for your current plan has been reached. Please upgrade your subscription.');
+            }
         }
+
+        if (limits.maxStudentsPerClass !== null) {
+            const count = await prisma.student.count({ where: { classId: classData.id } });
+            if (count >= limits.maxStudentsPerClass) {
+                return res.status(403).send('Student limit for this class has been reached for your current plan. Please upgrade your subscription.');
+            }
+        }
+
+        await addOrMoveStudentToClass(classData.id, classData.name, name, phone);
 
         res.redirect(`/teacher/classes/${classId}`);
     } catch (error) {
@@ -327,11 +423,15 @@ router.get('/quizzes', async (req, res) => {
 router.get('/quizzes/create', async (req, res) => {
     const teacher = (req as any).teacher;
     try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
+        const limits = getPlanLimits(plan as any);
+
         const classes = await prisma.class.findMany({
             where: { teacherId: teacher.id },
             orderBy: { name: 'asc' }
         });
-        res.render('teacher/create_quiz', { title: 'Create Quiz', teacher, classes });
+        res.render('teacher/create_quiz', { title: 'Create Quiz', teacher, classes, subscription: activeSubscription, limits });
     } catch (error) {
         console.error("Error loading create quiz form:", error);
         res.status(500).send("Error loading form");
@@ -355,6 +455,31 @@ router.post('/quizzes/create', upload.any(), async (req, res) => {
     const questionsArr = Array.isArray(questions) ? questions : (questions ? Object.values(questions as object) : []);
 
     try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
+        const limits = getPlanLimits(plan as any);
+
+        if (limits.maxQuizzesPerClassPerMonth !== null && selectedClasses.length > 0) {
+            const now = new Date();
+            const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            const existingQuizzes = await prisma.quiz.count({
+                where: {
+                    teacherId: teacher.id,
+                    createdAt: { gte: monthAgo },
+                    classes: {
+                        some: {
+                            id: { in: selectedClasses.map(c => c.id) }
+                        }
+                    }
+                }
+            });
+
+            if (existingQuizzes >= limits.maxQuizzesPerClassPerMonth) {
+                return res.status(403).send('Quiz limit for this month has been reached for your current plan. Please upgrade your subscription.');
+            }
+        }
+
         await prisma.quiz.create({
             data: {
                 title,
@@ -374,7 +499,7 @@ router.post('/quizzes/create', upload.any(), async (req, res) => {
                             questionText: q.text,
                             options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
                             correctOption: parseInt(q.correctOption),
-                            imageUrl: file ? file.path : null
+                            imageUrl: file ? `/uploads/${file.filename}` : null
                         };
                     })
                 }
@@ -534,7 +659,7 @@ router.post('/quizzes/:id/edit', upload.any(), async (req, res) => {
                             questionText: q.text,
                             options: q.options,
                             correctOption: parseInt(q.correctOption),
-                            imageUrl: file ? file.path : oldImageUrl
+                            imageUrl: file ? `/uploads/${file.filename}` : oldImageUrl
                         };
                     })
                 });
@@ -574,6 +699,11 @@ router.post('/quizzes/:id/release-results', async (req, res) => {
     try {
         const quiz = await prisma.quiz.findUnique({ where: { id: quizId, teacherId: teacher.id } });
         if (!quiz) return res.status(404).send('Quiz not found');
+
+        await prisma.quiz.update({
+            where: { id: quizId },
+            data: { showResults: true }
+        });
 
         res.redirect(`/teacher/quizzes/${quizId}?released=1`);
     } catch (error) {

@@ -25,7 +25,20 @@ router.post('/register', async (req, res) => {
             user = await prisma.teacher.create({
                 data: { email, password: hashedPassword, name, phone }
             });
-            const token = jwt.sign({ id: user.id, role: 'teacher' }, JWT_SECRET, { expiresIn: '24h' });
+            // Start free trial subscription for new teachers
+            const now = new Date();
+            const expiresAt = new Date(now.getTime());
+            expiresAt.setDate(expiresAt.getDate() + 7);
+            await prisma.subscription.create({
+                data: {
+                    teacherId: user.id,
+                    tier: 'FREE_TRIAL',
+                    status: 'active',
+                    startedAt: now,
+                    expiresAt
+                }
+            });
+            const token = jwt.sign({ id: user.id, role: 'teacher' }, JWT_SECRET);
             res.cookie('token', token, { httpOnly: true });
             return res.redirect('/teacher/dashboard');
 
@@ -46,7 +59,7 @@ router.post('/register', async (req, res) => {
                 });
             }
 
-            const token = jwt.sign({ id: user.id, role: 'student' }, JWT_SECRET, { expiresIn: '24h' });
+            const token = jwt.sign({ id: user.id, role: 'student' }, JWT_SECRET);
             res.cookie('token', token, { httpOnly: true });
             return res.redirect('/student/dashboard');
         } else {
@@ -68,7 +81,7 @@ router.post('/login', async (req, res) => {
             if (!teacher || !(await bcrypt.compare(password, teacher.password))) {
                 return res.render('auth/login', { title: 'Login', error: 'Invalid credentials' });
             }
-            const token = jwt.sign({ id: teacher.id, role: 'teacher' }, JWT_SECRET, { expiresIn: '24h' });
+            const token = jwt.sign({ id: teacher.id, role: 'teacher' }, JWT_SECRET);
             res.cookie('token', token, { httpOnly: true });
             return res.redirect('/teacher/dashboard');
 
@@ -77,7 +90,7 @@ router.post('/login', async (req, res) => {
             if (!student || !student.password || !(await bcrypt.compare(password, student.password))) {
                 return res.render('auth/login', { title: 'Login', error: 'Invalid phone number or password' });
             }
-            const token = jwt.sign({ id: student.id, role: 'student' }, JWT_SECRET, { expiresIn: '24h' });
+            const token = jwt.sign({ id: student.id, role: 'student' }, JWT_SECRET);
             res.cookie('token', token, { httpOnly: true });
             return res.redirect('/student/dashboard');
 
