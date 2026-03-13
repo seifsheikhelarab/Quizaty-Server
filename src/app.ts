@@ -12,8 +12,7 @@ const app = express();
 
 // Security & Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true
+    origin: process.env.CLIENT_URL || 'http://localhost:5173'
 }));
 app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for inline scripts (Alpine.js)
 app.use(express.json());
