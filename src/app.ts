@@ -12,7 +12,8 @@ const app = express();
 
 // Security & Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173'
+    origin: "https://quizaty.vercel.app/",
+    credentials: true
 }));
 app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for inline scripts (Alpine.js)
 app.use(express.json());
