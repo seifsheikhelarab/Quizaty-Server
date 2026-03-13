@@ -4,12 +4,17 @@ import 'dotenv/config';
 import expressLayouts from 'express-ejs-layouts';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import cors from 'cors';
 import router from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
 // Security & Middleware
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true
+}));
 app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for inline scripts (Alpine.js)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

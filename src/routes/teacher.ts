@@ -50,8 +50,9 @@ const addOrMoveStudentToClass = async (classId: string, className: string, name:
         });
     }
 
-    const message = `You have been added to class "${className}". Your student code for this class is: ${student.shortCode}`;
-    await sendWhatsAppMessage(student.phone, message);
+    // Auto-sending disabled for now, using wa.me link on the frontend instead
+    // const message = `You have been added to class "${className}". Your student code for this class is: ${student.shortCode}`;
+    // await sendWhatsAppMessage(student.phone, message);
 
     return student;
 };
@@ -158,13 +159,6 @@ router.post('/classes/create', async (req, res) => {
         const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
         const limits = getPlanLimits(plan as any);
 
-        if (limits.maxClasses !== null) {
-            const currentClasses = await prisma.class.count({ where: { teacherId: teacher.id } });
-            if (currentClasses >= limits.maxClasses) {
-                return res.status(403).send('Class limit reached for your current plan. Please upgrade your subscription.');
-            }
-        }
-
         const classData = await prisma.class.create({
             data: {
                 name: name.trim(),
@@ -181,12 +175,6 @@ router.post('/classes/create', async (req, res) => {
                         where: { class: { teacherId: teacher.id } }
                     });
                     if (totalForTeacher >= limits.maxTotalStudents) {
-                        break;
-                    }
-                }
-                if (limits.maxStudentsPerClass !== null) {
-                    const count = await prisma.student.count({ where: { classId: classData.id } });
-                    if (count >= limits.maxStudentsPerClass) {
                         break;
                     }
                 }
@@ -312,14 +300,7 @@ router.post('/classes/:id/students/add', async (req, res) => {
                 where: { class: { teacherId: teacher.id } }
             });
             if (totalForTeacher >= limits.maxTotalStudents) {
-                return res.status(403).send('Total student limit for your current plan has been reached. Please upgrade your subscription.');
-            }
-        }
-
-        if (limits.maxStudentsPerClass !== null) {
-            const count = await prisma.student.count({ where: { classId: classData.id } });
-            if (count >= limits.maxStudentsPerClass) {
-                return res.status(403).send('Student limit for this class has been reached for your current plan. Please upgrade your subscription.');
+                return res.status(403).send('حد الطلاب لباقتك الحالية تم الوصول إليه. يرجى ترقية الباقة.');
             }
         }
 
@@ -460,24 +441,13 @@ router.post('/quizzes/create', upload.any(), async (req, res) => {
         const plan = activeSubscription ? activeSubscription.tier : 'FREE_TRIAL';
         const limits = getPlanLimits(plan as any);
 
-        if (limits.maxQuizzesPerClassPerMonth !== null && selectedClasses.length > 0) {
-            const now = new Date();
-            const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
-
+        if (limits.maxQuizzes !== null) {
             const existingQuizzes = await prisma.quiz.count({
-                where: {
-                    teacherId: teacher.id,
-                    createdAt: { gte: monthAgo },
-                    classes: {
-                        some: {
-                            id: { in: selectedClasses.map(c => c.id) }
-                        }
-                    }
-                }
+                where: { teacherId: teacher.id }
             });
 
-            if (existingQuizzes >= limits.maxQuizzesPerClassPerMonth) {
-                return res.status(403).send('Quiz limit for this month has been reached for your current plan. Please upgrade your subscription.');
+            if (existingQuizzes >= limits.maxQuizzes) {
+                return res.status(403).send('حد الاختبارات لباقتك الحالية تم الوصول إليه. يرجى ترقية الباقة.');
             }
         }
 

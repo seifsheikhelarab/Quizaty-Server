@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import prisma from '../prisma.js';
 import { authenticateAdmin, requireSuperAdmin } from '../middleware.js';
+import { getAllPlans, getPlanInfo, type SubscriptionTier } from '../services/subscription.js';
 
 const router = Router();
 const ITEMS_PER_PAGE = 15;
@@ -180,10 +181,12 @@ router.get('/teachers/:id', async (req, res) => {
 
         const totalStudents = teacher.classes.reduce((sum, c) => sum + (c as any)._count.students, 0);
         const activeSubscription = teacher.subscriptions.find(s => s.status === 'active');
+        const activePlanInfo = activeSubscription ? getPlanInfo(activeSubscription.tier as SubscriptionTier) : getPlanInfo('FREE_TRIAL');
+        const plans = getAllPlans();
 
         res.render('admin/teacher_profile', {
             title: teacher.name || teacher.email,
-            admin, teacher, totalStudents, activeSubscription,
+            admin, teacher, totalStudents, activeSubscription, activePlanInfo, plans,
             layout: false
         });
     } catch (error) {

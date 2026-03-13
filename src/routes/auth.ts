@@ -78,12 +78,21 @@ router.post('/login', async (req, res) => {
     try {
         if (role === 'teacher') {
             const teacher = await prisma.teacher.findUnique({ where: { email } });
-            if (!teacher || !(await bcrypt.compare(password, teacher.password))) {
-                return res.render('auth/login', { title: 'Login', error: 'Invalid credentials' });
+            if (teacher && (await bcrypt.compare(password, teacher.password))) {
+                const token = jwt.sign({ id: teacher.id, role: 'teacher' }, JWT_SECRET);
+                res.cookie('token', token, { httpOnly: true });
+                return res.redirect('/teacher/dashboard');
             }
-            const token = jwt.sign({ id: teacher.id, role: 'teacher' }, JWT_SECRET);
-            res.cookie('token', token, { httpOnly: true });
-            return res.redirect('/teacher/dashboard');
+
+            // Check if it's an Assistant
+            const assistant = await prisma.assistant.findUnique({ where: { email } });
+            if (assistant && (await bcrypt.compare(password, assistant.password))) {
+                const token = jwt.sign({ id: assistant.teacherId, assistantId: assistant.id, role: 'teacher' }, JWT_SECRET);
+                res.cookie('token', token, { httpOnly: true });
+                return res.redirect('/teacher/dashboard');
+            }
+
+            return res.render('auth/login', { title: 'Login', error: 'Invalid credentials' });
 
         } else if (role === 'student') {
             const student = await prisma.student.findUnique({ where: { phone } });

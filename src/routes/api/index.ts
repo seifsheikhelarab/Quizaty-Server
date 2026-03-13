@@ -1,22 +1,18 @@
 import { Router } from 'express';
 import authRoutes from './auth.js';
 import teacherRoutes from './teacher.js';
-import quizRoutes from './quiz.js';
 import studentRoutes from './student.js';
-import adminRoutes from './admin.js';
-import apiRoutes from './api/index.js';
+import { getAllPlans } from '../../services/subscription.js';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-    res.redirect('/teacher/dashboard');
+// Public: Get all subscription plans
+router.get('/plans', (req, res) => {
+    res.json({ plans: getAllPlans() });
 });
 
-router.use('/api', apiRoutes);
 router.use('/auth', authRoutes);
 router.use('/teacher', teacherRoutes);
-router.use('/quiz', quizRoutes);
 router.use('/student', studentRoutes);
-router.use('/admin', adminRoutes);
 
 export default router;

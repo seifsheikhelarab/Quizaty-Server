@@ -17,6 +17,8 @@ model Teacher {
   updatedAt     DateTime       @updatedAt
   classes       Class[]
   subscriptions Subscription[]
+  bankQuestions BankQuestion[]
+  assistants    Assistant[]
 }
 
 model Student {
@@ -112,6 +114,29 @@ model Subscription {
   expiresAt DateTime?
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
+}
+
+model BankQuestion {
+  id            String   @id @default(cuid())
+  questionText  String
+  options       String[]
+  correctOption Int
+  imageUrl      String?
+  teacherId     String
+  teacher       Teacher  @relation(fields: [teacherId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Assistant {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Admin {
