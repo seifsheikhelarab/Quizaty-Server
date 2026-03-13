@@ -51,7 +51,7 @@ router.post('/login', async (req, res) => {
             const teacher = await prisma.teacher.findUnique({ where: { email } });
             if (teacher && (await bcrypt.compare(password, teacher.password))) {
                 const token = jwt.sign({ id: teacher.id, role: 'teacher' }, JWT_SECRET);
-                res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+                res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: process.env.NODE_ENV === 'production' });
                 return res.json({ user: { id: teacher.id, email: teacher.email, name: teacher.name, role: 'teacher' } });
             }
 
@@ -59,7 +59,7 @@ router.post('/login', async (req, res) => {
             const assistant = await prisma.assistant.findUnique({ where: { email } });
             if (assistant && (await bcrypt.compare(password, assistant.password))) {
                 const token = jwt.sign({ id: assistant.teacherId, assistantId: assistant.id, role: 'teacher' }, JWT_SECRET);
-                res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+                res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: process.env.NODE_ENV === 'production' });
                 return res.json({ user: { id: assistant.teacherId, assistantId: assistant.id, email: assistant.email, name: assistant.name, role: 'teacher', isAssistant: true } });
             }
 
@@ -84,7 +84,7 @@ router.post('/login', async (req, res) => {
                 return res.status(401).json({ error: 'Invalid phone number or password' });
             }
             const token = jwt.sign({ id: student.id, role: 'student' }, JWT_SECRET);
-            res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+            res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: process.env.NODE_ENV === 'production' });
             return res.json({ user: { id: student.id, name: student.name, phone: student.phone, role: 'student' } });
 
         } else {
@@ -122,7 +122,7 @@ router.post('/register', async (req, res) => {
                 }
             });
             const token = jwt.sign({ id: user.id, role: 'teacher' }, JWT_SECRET);
-            res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+            res.cookie('token', token, { httpOnly: true, sameSite: 'none' });
             return res.json({ user: { id: user.id, email: user.email, name: user.name, role: 'teacher' } });
 
         } else if (role === 'student') {
@@ -143,7 +143,7 @@ router.post('/register', async (req, res) => {
             }
 
             const token = jwt.sign({ id: user.id, role: 'student' }, JWT_SECRET);
-            res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+            res.cookie('token', token, { httpOnly: true, sameSite: 'none' });
             return res.json({ user: { id: user.id, name: user.name, phone: user.phone, role: 'student' } });
         } else {
             return res.status(400).json({ error: 'Invalid role selected' });
