@@ -191,7 +191,7 @@ router.get('/quizzes/:id/export', async (req, res) => {
             include: {
                 submissions: {
                     where: { submittedAt: { not: null } },
-                    include: { student: true },
+                    include: { student: { include: { class: true } } },
                     orderBy: { score: 'desc' }
                 }
             }
@@ -201,20 +201,28 @@ router.get('/quizzes/:id/export', async (req, res) => {
 
         const csvRows = [];
         // Header
-        csvRows.push(['Student Name', 'Phone', 'Score', 'Total', 'Time Taken (Mins)', 'Submitted At'].join(','));
+        csvRows.push(['Student Name', 'Class', 'Phone', 'Score', 'Percentage', 'Total', 'Time Taken (Mins)', 'Submitted At'].join(','));
+
+        const escapeCSV = (val: any) => {
+            if (val === null || val === undefined) return '""';
+            let str = String(val).replace(/"/g, '""'); // Escape double quotes
+            return `"${str}"`;
+        };
 
         for (const sub of quiz.submissions) {
             const timeTaken = sub.submittedAt ? ((new Date(sub.submittedAt).getTime() - new Date(sub.startedAt).getTime()) / 60000).toFixed(1) : '-';
             const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('en-US') : '-';
+            const percentage = quiz.totalMarks > 0 ? ((sub.score / quiz.totalMarks) * 100).toFixed(1) + '%' : '0%';
             
-            // wrap strings in quotes to avoid comma issues
             const row = [
-                `"${sub.student.name}"`,
-                `"${sub.student.phone}"`,
+                escapeCSV(sub.student.name),
+                escapeCSV(sub.student.class?.name || 'No Class'),
+                escapeCSV(sub.student.phone),
                 sub.score,
+                escapeCSV(percentage),
                 quiz.totalMarks,
                 timeTaken,
-                `"${dateStr}"`
+                escapeCSV(dateStr)
             ];
             csvRows.push(row.join(','));
         }

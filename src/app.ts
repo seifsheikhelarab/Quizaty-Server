@@ -10,9 +10,11 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
+const nodeEnv = process.env.NODE_ENV || "production";
+
 // Security & Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: nodeEnv === "development" ? "http://localhost:5173" : process.env.CLIENT_URL,
     credentials: true
 }));
 app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for inline scripts (Alpine.js)

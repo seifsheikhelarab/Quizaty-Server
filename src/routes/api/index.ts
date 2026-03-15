@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth.js';
 import teacherRoutes from './teacher.js';
 import studentRoutes from './student.js';
+import classRoutes from './classes.js';
 import { getAllPlans } from '../../services/subscription.js';
 
 const router = Router();
@@ -14,5 +15,6 @@ router.get('/plans', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/teacher', teacherRoutes);
 router.use('/student', studentRoutes);
+router.use('/classes', classRoutes);
 
 export default router;

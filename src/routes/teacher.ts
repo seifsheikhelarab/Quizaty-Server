@@ -2,60 +2,14 @@ import { Router } from 'express';
 import prisma from '../prisma.js';
 import { authenticateTeacher } from '../middleware.js';
 import multer from 'multer';
-import { sendWhatsAppMessage } from '../services/whatsapp.js';
 import { getActiveSubscriptionForTeacher, getPlanLimits } from '../services/subscription.js';
 import { uploadToCloudinary } from '../services/cloudinary.js';
+import { addOrMoveStudentToClass } from '../services/class.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-const SHORT_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-const generateShortCodeForClass = async (classId: string): Promise<string> => {
-    // Try a few times to generate a unique short code within this class
-    for (let attempt = 0; attempt < 5; attempt++) {
-        const code = Array.from({ length: 4 }, () => SHORT_CODE_CHARS[Math.floor(Math.random() * SHORT_CODE_CHARS.length)]).join('');
-        const existing = await prisma.student.findFirst({
-            where: { classId, shortCode: code }
-        });
-        if (!existing) {
-            return code;
-        }
-    }
-    throw new Error('Unable to generate unique short code for class');
-};
-
-const addOrMoveStudentToClass = async (classId: string, className: string, name: string, phone: string) => {
-    let student = await prisma.student.findUnique({ where: { phone } });
-
-    if (student) {
-        let data: any = { classId };
-        if (!student.shortCode) {
-            const shortCode = await generateShortCodeForClass(classId);
-            data.shortCode = shortCode;
-        }
-        student = await prisma.student.update({
-            where: { id: student.id },
-            data
-        });
-    } else {
-        const shortCode = await generateShortCodeForClass(classId);
-        student = await prisma.student.create({
-            data: {
-                name,
-                phone,
-                classId,
-                shortCode
-            }
-        });
-    }
-
-    // Auto-sending disabled for now, using wa.me link on the frontend instead
-    // const message = `You have been added to class "${className}". Your student code for this class is: ${student.shortCode}`;
-    // await sendWhatsAppMessage(student.phone, message);
-
-    return student;
-};
 
 router.use(authenticateTeacher);
 
