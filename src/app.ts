@@ -14,7 +14,7 @@ const nodeEnv = process.env.NODE_ENV || "production";
 
 // Security & Middleware
 app.use(cors({
-    origin: nodeEnv === "development" ? "http://localhost:5173" : process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true
 }));
 app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for inline scripts (Alpine.js)
@@ -26,7 +26,6 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 // EJS Setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(process.cwd(), 'views'));
-app.use(expressLayouts);
 app.set('layout', path.join(process.cwd(), 'views/layouts/main'));
 
 // Routes

@@ -1,9 +1,13 @@
 import { Router } from 'express';
+import multer from 'multer';
 import prisma from '../../prisma.js';
 import { authenticateTeacherAPI } from '../../middleware/apiAuth.js';
 import { getActiveSubscriptionForTeacher, getPlanLimits, checkStudentLimit, checkQuizLimit, getPlanInfo, type SubscriptionTier } from '../../services/subscription.js';
+import { extractQuestionsFromImage, extractQuestionsFromUrl, saveQuestionsToBank, type ExtractedQuestion } from '../../utils/ocr.js';
+import { uploadToCloudinary } from '../../services/cloudinary.js';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 router.use(authenticateTeacherAPI);
 
@@ -584,6 +588,167 @@ router.get('/quizzes/:quizId/submissions/:submissionId', async (req, res) => {
     } catch (error) {
         console.error("Error fetching submission details:", error);
         res.status(500).json({ error: "Error loading submission details" });
+    }
+});
+
+// ==========================================
+// OCR Routes
+// ==========================================
+
+router.post('/ocr/extract', upload.single('image'), async (req, res) => {
+    const teacher = (req as any).teacher;
+    const file = req.file as Express.Multer.File;
+
+    if (!file) {
+        return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
+        const limits = getPlanLimits(tier);
+
+        if (!limits.questionBank) {
+            return res.status(403).json({ error: 'Your current plan does not support OCR extraction. Please upgrade.' });
+        }
+
+        const result = await extractQuestionsFromImage(file.buffer);
+
+        res.json({
+            success: true,
+            questions: result.questions,
+            count: result.questions.length,
+            errors: result.errors
+        });
+    } catch (error: any) {
+        console.error("OCR extraction error:", error);
+        res.status(500).json({ error: "Failed to extract questions from image" });
+    }
+});
+
+router.post('/ocr/extract-url', async (req, res) => {
+    const teacher = (req as any).teacher;
+    const { imageUrl } = req.body;
+
+    if (!imageUrl) {
+        return res.status(400).json({ error: 'Image URL is required' });
+    }
+
+    try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
+        const limits = getPlanLimits(tier);
+
+        if (!limits.questionBank) {
+            return res.status(403).json({ error: 'Your current plan does not support OCR extraction. Please upgrade.' });
+        }
+
+        const result = await extractQuestionsFromUrl(imageUrl);
+
+        res.json({
+            success: true,
+            questions: result.questions,
+            count: result.questions.length,
+            errors: result.errors
+        });
+    } catch (error: any) {
+        console.error("OCR extraction error:", error);
+        res.status(500).json({ error: "Failed to extract questions from image URL" });
+    }
+});
+
+router.post('/ocr/save', async (req, res) => {
+    const teacher = (req as any).teacher;
+    const { questions } = req.body;
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+        return res.status(400).json({ error: 'Questions array is required' });
+    }
+
+    try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
+        const limits = getPlanLimits(tier);
+
+        if (!limits.questionBank) {
+            return res.status(403).json({ error: 'Your current plan does not support the Question Bank. Please upgrade.' });
+        }
+
+        const validQuestions: ExtractedQuestion[] = questions.map((q: any, index: number) => {
+            if (!q.questionText || !Array.isArray(q.options) || q.options.length < 4) {
+                throw new Error(`Invalid question at index ${index}`);
+            }
+            return {
+                questionText: String(q.questionText).trim(),
+                options: q.options.slice(0, 4).map(String),
+                correctOption: parseInt(q.correctOption) || 0,
+                imageUrl: q.imageUrl || undefined
+            };
+        });
+
+        const result = await saveQuestionsToBank(teacher.id, validQuestions);
+
+        res.json({
+            success: true,
+            saved: result.saved,
+            questions: result.questions
+        });
+    } catch (error: any) {
+        console.error("OCR save error:", error);
+        res.status(400).json({ error: error.message || "Failed to save questions" });
+    }
+});
+
+router.post('/ocr/extract-and-save', upload.single('image'), async (req, res) => {
+    const teacher = (req as any).teacher;
+    const file = req.file as Express.Multer.File;
+
+    if (!file) {
+        return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
+        const limits = getPlanLimits(tier);
+
+        if (!limits.questionBank) {
+            return res.status(403).json({ error: 'Your current plan does not support OCR extraction. Please upgrade.' });
+        }
+
+        let imageUrl: string | undefined;
+        try {
+            imageUrl = await uploadToCloudinary(file.buffer);
+        } catch (e) {
+            console.error("Image upload failed, continuing without URL:", e);
+        }
+
+        const result = await extractQuestionsFromImage(file.buffer);
+
+        if (result.questions.length === 0) {
+            return res.json({
+                success: false,
+                message: 'No questions found in image',
+                errors: result.errors
+            });
+        }
+
+        const questionsWithUrl = result.questions.map(q => ({
+            ...q,
+            imageUrl: imageUrl || undefined
+        }));
+
+        const saved = await saveQuestionsToBank(teacher.id, questionsWithUrl);
+
+        res.json({
+            success: true,
+            saved: saved.saved,
+            questions: saved.questions,
+            errors: result.errors
+        });
+    } catch (error: any) {
+        console.error("OCR extract and save error:", error);
+        res.status(500).json({ error: "Failed to extract and save questions" });
     }
 });
 

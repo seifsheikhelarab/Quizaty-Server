@@ -27,24 +27,20 @@
         "watch:css": "npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/output.css --watch"
     },
     "devDependencies": {
-        "@tailwindcss/cli": "^4.2.1",
         "@types/bcrypt": "^6.0.0",
         "@types/bun": "latest",
         "@types/cookie-parser": "^1.4.10",
         "@types/cors": "^2.8.19",
-        "@types/express-ejs-layouts": "^2.5.4",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/multer": "^2.1.0",
-        "@types/node-cron": "^3.0.11",
-        "autoprefixer": "^10.4.27",
-        "postcss": "^8.5.8",
-        "tailwindcss": "^4.2.1"
+        "@types/node-cron": "^3.0.11"
     },
     "peerDependencies": {
         "typescript": "^5"
     },
     "dependencies": {
         "@faker-js/faker": "^10.3.0",
+        "@google/generative-ai": "^0.24.1",
         "@prisma/adapter-pg": "^7.4.2",
         "@prisma/client": "^7.4.2",
         "@types/express": "^5.0.6",
@@ -56,14 +52,12 @@
         "dotenv": "^17.3.1",
         "ejs": "^5.0.1",
         "express": "^5.2.1",
-        "express-ejs-layouts": "^2.5.1",
         "express-rate-limit": "^8.3.0",
         "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.3",
         "multer": "^2.1.1",
         "node-cron": "^4.2.1",
         "prisma": "^7.4.2",
-        "telegraf": "^4.16.3",
         "zod": "^4.3.6"
     }
 }
