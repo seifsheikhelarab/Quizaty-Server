@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import 'dotenv/config';
-import expressLayouts from 'express-ejs-layouts';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import cors from 'cors';
