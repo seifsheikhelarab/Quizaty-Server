@@ -3,20 +3,26 @@ import app from './app.js';
 import prisma from './prisma.js';
 import { config } from './config.js';
 
-const PORT = config.port;
+// Vercel serverless export
+export default app;
 
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Local development server
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    const PORT = config.port;
 
-async function shutdown() {
-    console.log('Shutting down gracefully...');
-    server.close(async () => {
-        await prisma.$disconnect();
-        console.log('Database connections closed');
-        process.exit(0);
+    const server = app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
     });
-}
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+    async function shutdown() {
+        console.log('Shutting down gracefully...');
+        server.close(async () => {
+            await prisma.$disconnect();
+            console.log('Database connections closed');
+            process.exit(0);
+        });
+    }
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+}

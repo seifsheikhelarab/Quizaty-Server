@@ -8,11 +8,13 @@ export async function getDashboard(req: Request, res: Response) {
     const teacher = (req as TeacherRequest).teacher;
 
     try {
-        const [quizzesCount, studentsCount, submissionsCount, classesCount, activeSubscription] = await Promise.all([
+        const [quizzesCount, studentsCount, submissionsCount, classesCount, questionBankCount, assistantsCount, activeSubscription] = await Promise.all([
             prisma.quiz.count({ where: { teacherId: teacher.id } }),
             prisma.student.count({ where: { class: { teacherId: teacher.id } } }),
             prisma.submission.count({ where: { quiz: { teacherId: teacher.id } } }),
             prisma.class.count({ where: { teacherId: teacher.id } }),
+            prisma.bankQuestion.count({ where: { teacherId: teacher.id } }),
+            prisma.assistant.count({ where: { teacherId: teacher.id } }),
             getActiveSubscriptionForTeacher(teacher.id)
         ]);
 
@@ -30,6 +32,8 @@ export async function getDashboard(req: Request, res: Response) {
             subscription: activeSubscription,
             limits,
             planInfo,
+            questionBankCount,
+            assistantsCount,
             usage: {
                 students: { current: studentsCount, max: limits.maxTotalStudents },
                 quizzes: { current: quizzesCount, max: limits.maxQuizzes },
