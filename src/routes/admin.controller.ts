@@ -1,12 +1,15 @@
-import { Router } from 'express';
-import bcrypt from 'bcrypt';
+import type { Request, Response } from 'express';
+import type { AdminRequest } from '../middleware.js';
 import prisma from '../prisma.js';
-import { authenticateAdmin, requireSuperAdmin, type AdminRequest } from '../middleware.js';
 import { getAllPlans, getPlanInfo, type SubscriptionTier } from '../services/subscription.js';
-import { SALT_ROUNDS, ITEMS_PER_PAGE } from '../constants.js';
+import { ITEMS_PER_PAGE } from '../constants.js';
+
+function getAdmin(req: Request): AdminRequest {
+    return req as unknown as AdminRequest;
+}
 
 interface StudentWithRelations {
-    name: string | null;
+    name: string;
     submissions: Array<{
         submittedAt: Date | null;
         score: number;
@@ -21,12 +24,8 @@ interface TeacherWithRelations {
     subscriptions: Array<{ status: string; tier: string }>;
 }
 
-const router = Router();
-
-router.use(authenticateAdmin);
-
-router.get('/dashboard', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getDashboard(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
     try {
         const [teachersCount, studentsCount, quizzesCount, classesCount, subscriptionsCount] = await Promise.all([
             prisma.teacher.count(),
@@ -52,10 +51,10 @@ router.get('/dashboard', async (req, res) => {
         console.error("Admin dashboard error:", error);
         res.status(500).send("Error loading admin dashboard");
     }
-});
+}
 
-router.get('/studentRaws', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getStudents(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
     const page = parseInt(req.query.page as string) || 1;
     const q = (req.query.q as string || '').trim();
 
@@ -67,7 +66,7 @@ router.get('/studentRaws', async (req, res) => {
             ]
         } : {};
 
-        const [studentRaws, total] = await Promise.all([
+        const [students, total] = await Promise.all([
             prisma.student.findMany({
                 where,
                 include: { class: true },
@@ -80,22 +79,24 @@ router.get('/studentRaws', async (req, res) => {
 
         const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
-        res.render('admin/studentRaws', {
+        res.render('admin/students', {
             title: 'الطلاب',
-            admin, studentRaws, page, totalPages, total, q,
+            admin, students, page, totalPages, total, q,
             layout: false
         });
     } catch (error) {
-        console.error("Admin studentRaws error:", error);
-        res.status(500).send("Error loading studentRaws");
+        console.error("Admin students error:", error);
+        res.status(500).send("Error loading students");
     }
-});
+}
 
-router.get('/students/:id', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getStudentDetails(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
+    const studentId = String(req.params.id);
+
     try {
         const student = await prisma.student.findUnique({
-            where: { id: req.params.id },
+            where: { id: studentId },
             include: {
                 class: { include: { teacher: true } },
                 submissions: {
@@ -105,9 +106,9 @@ router.get('/students/:id', async (req, res) => {
             }
         });
 
-        const studentTyped = student as unknown as StudentWithRelations;
+        if (!student) return res.status(404).send('Student not found');
 
-        if (!studentTyped) return res.status(404).send('Student not found');
+        const studentTyped = student as unknown as StudentWithRelations;
 
         let bestScore: number | null = null;
         let worstScore: number | null = null;
@@ -137,7 +138,7 @@ router.get('/students/:id', async (req, res) => {
         };
 
         res.render('admin/student_profile', {
-            title: studentTyped.name ?? 'Student',
+            title: studentTyped.name,
             admin, student: studentTyped, analysis,
             layout: false
         });
@@ -145,10 +146,10 @@ router.get('/students/:id', async (req, res) => {
         console.error("Admin student profile error:", error);
         res.status(500).send("Error loading student profile");
     }
-});
+}
 
-router.get('/teachers', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getTeachers(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
     const page = parseInt(req.query.page as string) || 1;
     const q = (req.query.q as string || '').trim();
 
@@ -184,29 +185,25 @@ router.get('/teachers', async (req, res) => {
         console.error("Admin teachers error:", error);
         res.status(500).send("Error loading teachers");
     }
-});
+}
 
-router.get('/teachers/:id', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getTeacherDetails(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
+    const teacherId = String(req.params.id);
+
     try {
         const teacher = await prisma.teacher.findUnique({
-            where: { id: req.params.id },
+            where: { id: teacherId },
             include: {
-                quizzes: {
-                    orderBy: { createdAt: 'desc' },
-                    take: 10,
-                    include: { _count: { select: { submissions: true, questions: true } } }
-                },
-                classes: {
-                    include: { _count: { select: { students: true } } },
-                    orderBy: { name: 'asc' }
-                },
+                quizzes: { orderBy: { createdAt: 'desc' }, take: 10, include: { _count: { select: { submissions: true, questions: true } } } },
+                classes: { include: { _count: { select: { students: true } } }, orderBy: { name: 'asc' } },
                 subscriptions: { orderBy: { createdAt: 'desc' } }
             }
         });
 
+        if (!teacher) return res.status(404).send('Teacher not found');
+
         const teacherTyped = teacher as unknown as TeacherWithRelations;
-        if (!teacherTyped) return res.status(404).send('Teacher not found');
 
         const totalStudents = teacherTyped.classes.reduce((sum: number, c: TeacherWithRelations['classes'][number]) => sum + c._count.students, 0);
         const activeSubscription = teacherTyped.subscriptions.find((s: TeacherWithRelations['subscriptions'][number]) => s.status === 'active');
@@ -215,23 +212,23 @@ router.get('/teachers/:id', async (req, res) => {
 
         res.render('admin/teacher_profile', {
             title: teacherTyped.name || teacherTyped.email,
-            admin, teacher: teacherTyped, totalStudents, activeSubscription, activePlanInfo, plans,
+            admin, teacher, totalStudents, activeSubscription, activePlanInfo, plans,
             layout: false
         });
     } catch (error) {
         console.error("Admin teacher profile error:", error);
         res.status(500).send("Error loading teacher profile");
     }
-});
+}
 
-router.post('/teachers/:id/subscription', async (req, res) => {
+export async function manageSubscription(req: Request, res: Response) {
     const { action, tier, months } = req.body;
-    const teacherId = req.params.id;
+    const teacherId = String(req.params.id);
 
     try {
         if (action === 'upgrade') {
             const expiresAt = new Date();
-            expiresAt.setMonth(expiresAt.getMonth() + (parseInt(months as string) || 1));
+            expiresAt.setMonth(expiresAt.getMonth() + (parseInt(String(months)) || 1));
             await prisma.subscription.create({
                 data: {
                     teacherId,
@@ -264,10 +261,10 @@ router.post('/teachers/:id/subscription', async (req, res) => {
         console.error("Subscription action error:", error);
         res.status(500).send("Error processing subscription action");
     }
-});
+}
 
-router.get('/quizzes', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getQuizzes(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
     const page = parseInt(req.query.page as string) || 1;
     const q = (req.query.q as string || '').trim();
 
@@ -301,13 +298,15 @@ router.get('/quizzes', async (req, res) => {
         console.error("Admin quizzes error:", error);
         res.status(500).send("Error loading quizzes");
     }
-});
+}
 
-router.get('/classes/:id', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getClassDetails(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
+    const classId = String(req.params.id);
+
     try {
         const classData = await prisma.class.findUnique({
-            where: { id: req.params.id },
+            where: { id: classId },
             include: {
                 teacher: true,
                 students: { orderBy: { name: 'asc' } },
@@ -325,10 +324,10 @@ router.get('/classes/:id', async (req, res) => {
         console.error("Admin class profile error:", error);
         res.status(500).send("Error loading class profile");
     }
-});
+}
 
-router.get('/subscriptions', async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
+export async function getSubscriptions(req: Request, res: Response) {
+    const admin = getAdmin(req).admin;
     const page = parseInt(req.query.page as string) || 1;
 
     try {
@@ -353,45 +352,4 @@ router.get('/subscriptions', async (req, res) => {
         console.error("Admin subscriptions error:", error);
         res.status(500).send("Error loading subscriptions");
     }
-});
-
-router.get('/invite', requireSuperAdmin, (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
-    res.render('admin/invite', { title: 'دعوة مدير جديد', admin, error: null, success: null, layout: false });
-});
-
-router.post('/invite', requireSuperAdmin, async (req, res) => {
-    const admin = (req as unknown as AdminRequest).admin;
-    const { email, password, name, role } = req.body;
-
-    try {
-        const existing = await prisma.admin.findUnique({ where: { email } });
-        if (existing) {
-            return res.render('admin/invite', {
-                title: 'دعوة مدير جديد', admin,
-                error: 'هذا البريد الإلكتروني مسجل بالفعل', success: null,
-                layout: false
-            });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-        await prisma.admin.create({
-            data: { email, password: hashedPassword, name, role: role || 'ADMIN' }
-        });
-
-        res.render('admin/invite', {
-            title: 'دعوة مدير جديد', admin,
-            error: null, success: 'تم إنشاء حساب المدير بنجاح',
-            layout: false
-        });
-    } catch (error) {
-        console.error("Admin invite error:", error);
-        res.render('admin/invite', {
-            title: 'دعوة مدير جديد', admin,
-            error: 'فشل إنشاء الحساب. حاول مرة أخرى.', success: null,
-            layout: false
-        });
-    }
-});
-
-export default router;
+}

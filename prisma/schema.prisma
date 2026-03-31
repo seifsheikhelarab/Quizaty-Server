@@ -19,6 +19,8 @@ model Teacher {
   subscriptions Subscription[]
   bankQuestions BankQuestion[]
   assistants    Assistant[]
+
+  @@index([id])
 }
 
 model Student {
@@ -36,6 +38,8 @@ model Student {
   shortCode   String?
 
   @@unique([classId, shortCode])
+  @@index([classId])
+  @@index([phone])
 }
 
 model Quiz {
@@ -54,6 +58,10 @@ model Quiz {
   showResults Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
+  @@index([teacherId])
+  @@index([startTime])
+  @@index([endTime])
 }
 
 model Question {
@@ -64,6 +72,8 @@ model Question {
   imageUrl      String? // Optional image illustration
   quizId        String
   quiz          Quiz     @relation(fields: [quizId], references: [id])
+
+  @@index([quizId])
 }
 
 model Submission {
@@ -77,6 +87,10 @@ model Submission {
   score       Int       @default(0)
   answers     Json? // Optional: store student answers
   violations  Json? // Optional: store cheating violations
+
+  @@index([studentId])
+  @@index([quizId])
+  @@index([submittedAt])
 }
 
 model Class {
@@ -89,6 +103,8 @@ model Class {
   quizzes     Quiz[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([teacherId])
 }
 
 enum SubscriptionTier {
@@ -114,6 +130,10 @@ model Subscription {
   expiresAt DateTime?
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
+
+  @@index([teacherId])
+  @@index([status])
+  @@index([expiresAt])
 }
 
 model BankQuestion {
@@ -126,6 +146,8 @@ model BankQuestion {
   teacher       Teacher  @relation(fields: [teacherId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([teacherId])
 }
 
 model Assistant {
@@ -137,6 +159,8 @@ model Assistant {
   teacher   Teacher  @relation(fields: [teacherId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([teacherId])
 }
 
 model Admin {
@@ -147,4 +171,6 @@ model Admin {
   role      String   @default("ADMIN")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([role])
 }

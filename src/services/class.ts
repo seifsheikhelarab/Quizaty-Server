@@ -20,7 +20,7 @@ export const addOrMoveStudentToClass = async (classId: string, className: string
     let student = await prisma.student.findUnique({ where: { phone } });
 
     if (student) {
-        let data: any = { classId };
+        const data: Record<string, unknown> = { classId };
         if (!student.shortCode || student.classId !== classId) {
             const shortCode = await generateShortCodeForClass(classId);
             data.shortCode = shortCode;
@@ -41,9 +41,6 @@ export const addOrMoveStudentToClass = async (classId: string, className: string
         });
     }
 
-    // Auto-sending disabled for now, using wa.me link on the frontend instead
-    // const message = `You have been added to class "${className}". Your student code for this class is: ${student.shortCode}`;
-    // await sendWhatsAppMessage(student.phone, message);
 
     return student;
 };

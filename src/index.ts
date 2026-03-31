@@ -1,8 +1,22 @@
 import "dotenv/config";
 import app from './app.js';
+import prisma from './prisma.js';
+import { config } from './config.js';
 
-const PORT = process.env.PORT || 7492;
+const PORT = config.port;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+async function shutdown() {
+    console.log('Shutting down gracefully...');
+    server.close(async () => {
+        await prisma.$disconnect();
+        console.log('Database connections closed');
+        process.exit(0);
+    });
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

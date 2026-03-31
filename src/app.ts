@@ -4,23 +4,36 @@ import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import cors from 'cors';
-import router from './routes/index.js';
+import router from './api/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { config } from './config.js';
+import httpLogger from './utils/logger.js';
 
 const app = express();
 
-const nodeEnv = process.env.NODE_ENV || "production";
-
 // Security & Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: config.clientUrl,
     credentials: true
 }));
-app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for inline scripts (Alpine.js)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"], // Required for Alpine.js
+            styleSrc: ["'self'", "'unsafe-inline'"],  // Required for inline styles
+            imgSrc: ["'self'", 'data:', 'https:'],    // Allow data URLs and HTTPS images
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: [],
+        },
+    },
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(process.cwd(), 'public')));
+app.use(httpLogger);
 
 // EJS Setup
 app.set('view engine', 'ejs');

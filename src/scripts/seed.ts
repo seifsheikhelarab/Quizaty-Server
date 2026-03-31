@@ -132,7 +132,7 @@ async function main() {
                 .map((c) => c.id);
 
             const questionCount = faker.number.int({ min: 3, max: 6 });
-            const questions = Array.from({ length: questionCount }, (_, i) => {
+            const questions = Array.from({ length: questionCount }, () => {
                 const options = [
                     faker.lorem.sentence(),
                     faker.lorem.sentence(),
@@ -234,7 +234,7 @@ async function main() {
         },
     });
 
-    const testStudent = await prisma.student.create({
+    const _testStudent = await prisma.student.create({
         data: {
             name: "Test Student",
             phone: "+15550000002",
@@ -245,7 +245,7 @@ async function main() {
         },
     });
 
-    const testQuiz = await prisma.quiz.create({
+    const _testQuiz = await prisma.quiz.create({
         data: {
             title: "Test Quiz",
             description: "A sample quiz for testing",

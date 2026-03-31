@@ -80,11 +80,11 @@ export async function extractQuestionsFromImage(imageBuffer: Buffer): Promise<Ex
         const text = response.text();
 
         return parseGeminiResponse(text);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("OCR extraction error:", error);
         return {
             questions: [],
-            errors: [error.message || "Failed to extract questions from image"]
+            errors: [error instanceof Error ? error.message : "Failed to extract questions from image"]
         };
     }
 }
@@ -112,11 +112,11 @@ export async function extractQuestionsFromUrl(imageUrl: string): Promise<Extract
         const text = response.text();
 
         return parseGeminiResponse(text);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("OCR extraction error:", error);
         return {
             questions: [],
-            errors: [error.message || "Failed to extract questions from image URL"]
+            errors: [error instanceof Error ? error.message : "Failed to extract questions from image URL"]
         };
     }
 }
@@ -140,35 +140,36 @@ function parseGeminiResponse(text: string): ExtractResult {
             return { questions: [], rawText: text };
         }
 
-        const questions: ExtractedQuestion[] = parsed.questions.map((q: any, index: number) => {
+        const questions: ExtractedQuestion[] = parsed.questions.map((q: Record<string, unknown>, index: number) => {
             if (!q.questionText) {
                 errors.push(`Question ${index + 1} is missing question text`);
                 return null;
             }
 
+            const questionText = String(q.questionText);
             const options = normalizeOptions(q.options);
-            let correctOption = parseInt(q.correctOption);
+            let correctOption = parseInt(String(q.correctOption));
 
             if (isNaN(correctOption) || correctOption < 0 || correctOption > 3) {
-                errors.push(`Question "${q.questionText.substring(0, 50)}..." has invalid correctOption, defaulting to 0`);
+                errors.push(`Question "${questionText.substring(0, 50)}..." has invalid correctOption, defaulting to 0`);
                 correctOption = 0;
             }
 
             return {
-                questionText: q.questionText.trim(),
+                questionText: questionText.trim(),
                 options,
                 correctOption
             };
         }).filter(Boolean);
 
         return { questions, rawText: text, errors: errors.length > 0 ? errors : undefined };
-    } catch (error: any) {
-        errors.push(`Failed to parse response: ${error.message}`);
+    } catch (error: unknown) {
+        errors.push(`Failed to parse response: ${error instanceof Error ? error.message : String(error)}`);
         return { questions: [], rawText: text, errors };
     }
 }
 
-function normalizeOptions(options: any): string[] {
+function normalizeOptions(options: unknown): string[] {
     if (!options) return ["", "", "", ""];
     if (Array.isArray(options) && options.length === 4) {
         return options.map((opt: string) => String(opt).trim());
@@ -179,10 +180,11 @@ function normalizeOptions(options: any): string[] {
     }
     if (typeof options === 'object') {
         const result: string[] = ["", "", "", ""];
-        if (options.A !== undefined) result[0] = String(options.A).trim();
-        if (options.B !== undefined) result[1] = String(options.B).trim();
-        if (options.C !== undefined) result[2] = String(options.C).trim();
-        if (options.D !== undefined) result[3] = String(options.D).trim();
+        const obj = options as Record<string, unknown>;
+        if (obj.A !== undefined) result[0] = String(obj.A).trim();
+        if (obj.B !== undefined) result[1] = String(obj.B).trim();
+        if (obj.C !== undefined) result[2] = String(obj.C).trim();
+        if (obj.D !== undefined) result[3] = String(obj.D).trim();
         return result;
     }
     return ["", "", "", ""];
@@ -204,7 +206,7 @@ function detectMimeType(buffer: Buffer): string {
 export async function saveQuestionsToBank(
     teacherId: string,
     questions: ExtractedQuestion[]
-): Promise<{ saved: number; questions: any[] }> {
+): Promise<{ saved: number; questions: unknown[] }> {
     const savedQuestions = await prisma.bankQuestion.createMany({
         data: questions.map(q => ({
             questionText: q.questionText,

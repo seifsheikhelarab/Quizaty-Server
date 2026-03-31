@@ -1,19 +1,16 @@
-import { Router } from 'express';
-import multer from 'multer';
-import prisma from '../../prisma.js';
-import { authenticateTeacherAPI } from '../../middleware/apiAuth.js';
-import { getActiveSubscriptionForTeacher, getPlanLimits, checkStudentLimit, checkQuizLimit, getPlanInfo, type SubscriptionTier } from '../../services/subscription.js';
+import type { Prisma, SubscriptionTier } from "@prisma/client";
+import type { TeacherRequest } from "../../middleware/apiAuth.js";
+import prisma from "../../prisma.js";
+import { getActiveSubscriptionForTeacher, getPlanLimits, getPlanInfo, checkQuizLimit, checkStudentLimit } from "../../services/subscription.js";
+import type { Request, Response } from "express";
 import { extractQuestionsFromImage, extractQuestionsFromUrl, saveQuestionsToBank, type ExtractedQuestion } from '../../utils/ocr.js';
 import { uploadToCloudinary } from '../../services/cloudinary.js';
+import bcrypt from 'bcrypt';
+import { SALT_ROUNDS } from '../../constants.js';
 
-const router = Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+export async function getDashboard(req: Request, res: Response) {
 
-router.use(authenticateTeacherAPI);
-
-// GET /api/teacher/dashboard
-router.get('/dashboard', async (req, res) => {
-    const teacher = (req as any).teacher;
+    const teacher = (req as TeacherRequest).teacher;
 
     try {
         const [quizzesCount, studentsCount, submissionsCount, classesCount, activeSubscription] = await Promise.all([
@@ -47,11 +44,11 @@ router.get('/dashboard', async (req, res) => {
         console.error("Dashboard API error:", error);
         res.status(500).json({ error: "Error loading dashboard" });
     }
-});
+}
 
-// GET /api/teacher/classes
-router.get('/classes', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function getClasses(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
         const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
@@ -67,12 +64,12 @@ router.get('/classes', async (req, res) => {
         console.error("Error fetching classes:", error);
         res.status(500).json({ error: "Error loading classes" });
     }
-});
+}
 
-// GET /api/teacher/classes/:id
-router.get('/classes/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const classId = req.params.id;
+export async function getClassDetails(req: Request, res: Response) {
+
+    const teacher = (req as unknown as TeacherRequest).teacher;
+    const classId = req.params.id as string;
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
         const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
@@ -91,11 +88,11 @@ router.get('/classes/:id', async (req, res) => {
         console.error("Error fetching class details:", error);
         res.status(500).json({ error: "Error loading class details" });
     }
-});
+}
 
-// GET /api/teacher/quizzes
-router.get('/quizzes', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function getQuizzes(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     try {
         const quizzes = await prisma.quiz.findMany({
             where: { teacherId: teacher.id },
@@ -107,12 +104,12 @@ router.get('/quizzes', async (req, res) => {
         console.error("Error fetching quizzes:", error);
         res.status(500).json({ error: "Error loading quizzes" });
     }
-});
+}
 
-// GET /api/teacher/quizzes/:id
-router.get('/quizzes/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const quizId = req.params.id;
+export async function getQuizDetails(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const quizId = req.params.id as string;
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
         const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
@@ -128,8 +125,8 @@ router.get('/quizzes/:id', async (req, res) => {
         });
         if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
 
-        const completedSubmissions = quiz.submissions.filter(s => s.submittedAt);
-        const totalStudentsInAssignedClasses = quiz.classes.reduce((sum, c) => sum + (c as any)._count.students, 0);
+        const completedSubmissions = quiz.submissions.filter((s: { submittedAt: Date | null }) => s.submittedAt);
+        const totalStudentsInAssignedClasses = quiz.classes.reduce((sum: number, c: { _count: { students: number } }) => sum + c._count.students, 0);
 
         let bestScore: number | null = null;
         let worstScore: number | null = null;
@@ -139,7 +136,7 @@ router.get('/quizzes/:id', async (req, res) => {
         let totalTime = 0;
         let validSubmissionsCount = 0;
 
-        completedSubmissions.forEach(sub => {
+        completedSubmissions.forEach((sub: { submittedAt: Date | null; score: number; startedAt: Date }) => {
             if (sub.submittedAt && quiz.totalMarks > 0) {
                 const percentage = (sub.score / quiz.totalMarks) * 100;
                 if (bestScore === null || percentage > bestScore) bestScore = percentage;
@@ -175,12 +172,12 @@ router.get('/quizzes/:id', async (req, res) => {
         console.error("Error fetching quiz details:", error);
         res.status(500).json({ error: "Error loading quiz details" });
     }
-});
+}
 
-// GET /api/teacher/quizzes/:id/export
-router.get('/quizzes/:id/export', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const quizId = req.params.id;
+export async function exportQuiz(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const quizId = req.params.id as string;
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
         const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
@@ -207,9 +204,9 @@ router.get('/quizzes/:id/export', async (req, res) => {
         // Header
         csvRows.push(['Student Name', 'Class', 'Phone', 'Score', 'Percentage', 'Total', 'Time Taken (Mins)', 'Submitted At'].join(','));
 
-        const escapeCSV = (val: any) => {
+        const escapeCSV = (val: unknown) => {
             if (val === null || val === undefined) return '""';
-            let str = String(val).replace(/"/g, '""'); // Escape double quotes
+            const str = String(val).replace(/"/g, '""'); // Escape double quotes
             return `"${str}"`;
         };
 
@@ -217,7 +214,7 @@ router.get('/quizzes/:id/export', async (req, res) => {
             const timeTaken = sub.submittedAt ? ((new Date(sub.submittedAt).getTime() - new Date(sub.startedAt).getTime()) / 60000).toFixed(1) : '-';
             const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('en-US') : '-';
             const percentage = quiz.totalMarks > 0 ? ((sub.score / quiz.totalMarks) * 100).toFixed(1) + '%' : '0%';
-            
+
             const row = [
                 escapeCSV(sub.student.name),
                 escapeCSV(sub.student.class?.name || 'No Class'),
@@ -239,47 +236,49 @@ router.get('/quizzes/:id/export', async (req, res) => {
         console.error("Error exporting quiz:", error);
         res.status(500).json({ error: "Error exporting quiz" });
     }
-});
+}
 
-// POST /api/teacher/classes - Create a class
-router.post('/classes', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function createClass(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     const { name, description, studentPhones } = req.body;
     if (!name || name.trim() === '') return res.status(400).json({ error: 'Class name is required' });
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
         const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
 
-        const classData = await prisma.class.create({
-            data: { name: name.trim(), description: description?.trim() || null, teacherId: teacher.id }
-        });
-        // Add students by phone numbers if provided
-        if (studentPhones && typeof studentPhones === 'string') {
-            const phones = studentPhones.split('\n').map((p: string) => p.trim()).filter(Boolean);
-            for (const phone of phones) {
-                // Check student limit before each add
-                const studentCheck = await checkStudentLimit(teacher.id, tier);
-                if (!studentCheck.allowed) break;
+        const classData = await prisma.$transaction(async (tx) => {
+            const newClass = await tx.class.create({
+                data: { name: name.trim(), description: description?.trim() || null, teacherId: teacher.id }
+            });
+            // Add students by phone numbers if provided
+            if (studentPhones && typeof studentPhones === 'string') {
+                const phones = studentPhones.split('\n').map((p: string) => p.trim()).filter(Boolean);
+                for (const phone of phones) {
+                    const studentCheck = await checkStudentLimit(teacher.id, tier);
+                    if (!studentCheck.allowed) break;
 
-                let student = await prisma.student.findUnique({ where: { phone } });
-                if (student) {
-                    await prisma.student.update({ where: { id: student.id }, data: { classId: classData.id } });
-                } else {
-                    await prisma.student.create({ data: { name: 'Student', phone, classId: classData.id } });
+                    const student = await tx.student.findUnique({ where: { phone } });
+                    if (student) {
+                        await tx.student.update({ where: { id: student.id }, data: { classId: newClass.id } });
+                    } else {
+                        await tx.student.create({ data: { name: 'Student', phone, classId: newClass.id } });
+                    }
                 }
             }
-        }
+            return newClass;
+        });
         res.json({ classData });
     } catch (error) {
         console.error("Error creating class:", error);
         res.status(500).json({ error: "Error creating class" });
     }
-});
+}
 
-// PUT /api/teacher/classes/:id - Update a class
-router.put('/classes/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const classId = req.params.id;
+export async function updateClass(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const classId = req.params.id as string;
     const { name, description } = req.body;
     if (!name || name.trim() === '') return res.status(400).json({ error: 'Class name is required' });
     try {
@@ -292,11 +291,11 @@ router.put('/classes/:id', async (req, res) => {
         console.error("Error updating class:", error);
         res.status(500).json({ error: "Error updating class" });
     }
-});
+}
 
-// POST /api/teacher/quizzes - Create a quiz
-router.post('/quizzes', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function createQuiz(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     const { title, description, startTime, endTime, duration, totalMarks, questions, classIds } = req.body;
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
@@ -327,7 +326,7 @@ router.post('/quizzes', async (req, res) => {
                 teacherId: teacher.id,
                 classes: { connect: selectedClasses },
                 questions: {
-                    create: (questions || []).map((q: any) => ({
+                    create: (questions || []).map((q: { text: string; options: string[]; correctOption: string; imageUrl?: string }) => ({
                         questionText: q.text,
                         options: Array.isArray(q.options) ? q.options : [],
                         correctOption: parseInt(q.correctOption),
@@ -341,12 +340,12 @@ router.post('/quizzes', async (req, res) => {
         console.error("Error creating quiz:", error);
         res.status(500).json({ error: "Error creating quiz" });
     }
-});
+}
 
-// PUT /api/teacher/quizzes/:id - Update a quiz
-router.put('/quizzes/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const quizId = req.params.id;
+export async function updateQuiz(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const quizId = req.params.id as string;
     const { title, description, startTime, endTime, duration, totalMarks, questions, classIds } = req.body;
     try {
         const quiz = await prisma.quiz.findUnique({ where: { id: quizId, teacherId: teacher.id } });
@@ -357,7 +356,7 @@ router.put('/quizzes/:id', async (req, res) => {
             selectedClasses = classIds.map((id: string) => ({ id }));
         }
 
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             await tx.quiz.update({
                 where: { id: quizId },
                 data: {
@@ -372,7 +371,7 @@ router.put('/quizzes/:id', async (req, res) => {
             if (questions) {
                 await tx.question.deleteMany({ where: { quizId } });
                 await tx.question.createMany({
-                    data: questions.map((q: any) => ({
+                    data: questions.map((q: { text: string; options: string[]; correctOption: string; imageUrl?: string }) => ({
                         quizId,
                         questionText: q.text,
                         options: Array.isArray(q.options) ? q.options : [],
@@ -387,19 +386,19 @@ router.put('/quizzes/:id', async (req, res) => {
         console.error("Error updating quiz:", error);
         res.status(500).json({ error: "Error updating quiz" });
     }
-});
+}
 
-// GET /api/teacher/quizzes/:id/edit - Get quiz data for editing
-router.get('/quizzes/:id/edit', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const quizId = req.params.id;
+export async function getQuizUpdate(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
         const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
         const limits = getPlanLimits(tier);
 
         const quiz = await prisma.quiz.findFirst({
-            where: { id: req.params.id, teacherId: teacher.id },
+            where: { id: req.params.id as string, teacherId: teacher.id },
             include: {
                 questions: { orderBy: { id: 'asc' } },
                 classes: { select: { id: true, name: true } }
@@ -418,12 +417,12 @@ router.get('/quizzes/:id/edit', async (req, res) => {
         console.error("Error loading quiz edit data:", error);
         res.status(500).json({ error: "Error loading form" });
     }
-});
+}
 
-// DELETE /api/teacher/classes/:id
-router.delete('/classes/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const classId = req.params.id;
+export async function deleteClass(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const classId = req.params.classId as string;
     try {
         await prisma.$transaction([
             prisma.student.updateMany({ where: { classId }, data: { classId: null } }),
@@ -434,12 +433,13 @@ router.delete('/classes/:id', async (req, res) => {
         console.error("Error deleting class:", error);
         res.status(500).json({ error: "Error deleting class" });
     }
-});
+}
 
-// POST /api/teacher/classes/:id/students
-router.post('/classes/:id/students', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const classId = req.params.id;
+export async function addStudent(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const classId = req.params.classId as string;
+
     const { name, phone } = req.body;
     try {
         const classData = await prisma.class.findUnique({ where: { id: classId, teacherId: teacher.id } });
@@ -459,23 +459,35 @@ router.post('/classes/:id/students', async (req, res) => {
         }
 
         // Check if student already exists
-        let student = await prisma.student.findUnique({ where: { phone } });
+        let student = await prisma.student.findUnique({
+            where: { phone },
+            select: { id: true, name: true, phone: true, classId: true, shortCode: true, createdAt: true, updatedAt: true }
+        });
         if (student) {
-            student = await prisma.student.update({ where: { id: student.id }, data: { classId } });
+            student = await prisma.student.update({
+                where: { id: student.id },
+                data: { classId },
+                select: { id: true, name: true, phone: true, classId: true, shortCode: true, createdAt: true, updatedAt: true }
+            });
         } else {
-            student = await prisma.student.create({ data: { name, phone, classId } });
+            student = await prisma.student.create({
+                data: { name, phone, classId },
+                select: { id: true, name: true, phone: true, classId: true, shortCode: true, createdAt: true, updatedAt: true }
+            });
         }
         res.json({ student });
     } catch (error) {
         console.error("Error adding student:", error);
         res.status(500).json({ error: "Error adding student" });
     }
-});
+}
 
-// DELETE /api/teacher/classes/:id/students/:studentId
-router.delete('/classes/:id/students/:studentId', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const { id: classId, studentId } = req.params;
+export async function removeStudent(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const classId = req.params.id as string;
+    const studentId = req.params.studentId as string;
+    
     try {
         const classData = await prisma.class.findUnique({ where: { id: classId, teacherId: teacher.id } });
         if (!classData) return res.status(404).json({ error: 'Class not found' });
@@ -485,12 +497,12 @@ router.delete('/classes/:id/students/:studentId', async (req, res) => {
         console.error("Error removing student:", error);
         res.status(500).json({ error: "Error removing student" });
     }
-});
+}
 
-// DELETE /api/teacher/quizzes/:id
-router.delete('/quizzes/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const quizId = req.params.id;
+export async function deleteQuiz(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const quizId = req.params.id as string;
     try {
         const quiz = await prisma.quiz.findUnique({ where: { id: quizId, teacherId: teacher.id } });
         if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
@@ -504,12 +516,12 @@ router.delete('/quizzes/:id', async (req, res) => {
         console.error("Error deleting quiz:", error);
         res.status(500).json({ error: "Error deleting quiz" });
     }
-});
+}
 
-// POST /api/teacher/quizzes/:id/release-results
-router.post('/quizzes/:id/release-results', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const quizId = req.params.id;
+export async function releaseQuizResults(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const quizId = req.params.id as string;
     try {
         const quiz = await prisma.quiz.findUnique({ where: { id: quizId, teacherId: teacher.id } });
         if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
@@ -519,16 +531,24 @@ router.post('/quizzes/:id/release-results', async (req, res) => {
         console.error("Error releasing results:", error);
         res.status(500).json({ error: "Error releasing results" });
     }
-});
+}
 
-// GET /api/teacher/students/:id
-router.get('/students/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const studentId = req.params.id;
+export async function getStudentDetails(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const studentId = req.params.id as string;
     try {
         const student = await prisma.student.findUnique({
             where: { id: studentId },
-            include: {
+            select: {
+                id: true,
+                name: true,
+                phone: true,
+                parentPhone: true,
+                shortCode: true,
+                classId: true,
+                createdAt: true,
+                updatedAt: true,
                 class: true,
                 submissions: {
                     where: { quiz: { teacherId: teacher.id } },
@@ -544,7 +564,7 @@ router.get('/students/:id', async (req, res) => {
         let totalScorePercentage = 0;
         let validSubmissionsCount = 0;
 
-        student.submissions.forEach(sub => {
+        student.submissions.forEach((sub: { submittedAt: Date | null; score: number; quiz: { totalMarks: number } }) => {
             if (sub.submittedAt && sub.quiz.totalMarks > 0) {
                 const percentage = (sub.score / sub.quiz.totalMarks) * 100;
                 if (bestScore === null || percentage > bestScore) bestScore = percentage;
@@ -565,12 +585,14 @@ router.get('/students/:id', async (req, res) => {
         console.error("Error fetching student details:", error);
         res.status(500).json({ error: "Error loading student details" });
     }
-});
+}
 
-// GET /api/teacher/quizzes/:quizId/submissions/:submissionId
-router.get('/quizzes/:quizId/submissions/:submissionId', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const { quizId, submissionId } = req.params;
+export async function getSubmissionDetails(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const quizId = req.params.quizId as string;
+    const submissionId = req.params.submissionId as string;
+
     try {
         const quiz = await prisma.quiz.findUnique({
             where: { id: quizId, teacherId: teacher.id },
@@ -589,14 +611,15 @@ router.get('/quizzes/:quizId/submissions/:submissionId', async (req, res) => {
         console.error("Error fetching submission details:", error);
         res.status(500).json({ error: "Error loading submission details" });
     }
-});
+}
 
 // ==========================================
-// OCR Routes
+// OCR Controllers
 // ==========================================
 
-router.post('/ocr/extract', upload.single('image'), async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function extractOcrFromImage(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     const file = req.file as Express.Multer.File;
 
     if (!file) {
@@ -620,14 +643,15 @@ router.post('/ocr/extract', upload.single('image'), async (req, res) => {
             count: result.questions.length,
             errors: result.errors
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("OCR extraction error:", error);
         res.status(500).json({ error: "Failed to extract questions from image" });
     }
-});
+}
 
-router.post('/ocr/extract-url', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function extractOcrFromUrl(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     const { imageUrl } = req.body;
 
     if (!imageUrl) {
@@ -651,19 +675,21 @@ router.post('/ocr/extract-url', async (req, res) => {
             count: result.questions.length,
             errors: result.errors
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("OCR extraction error:", error);
         res.status(500).json({ error: "Failed to extract questions from image URL" });
     }
-});
+}
 
-router.post('/ocr/save', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function saveOcrQuestions(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     const { questions } = req.body;
 
     if (!questions || !Array.isArray(questions) || questions.length === 0) {
         return res.status(400).json({ error: 'Questions array is required' });
     }
+    const typedQuestions = questions as ExtractedQuestion[];
 
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
@@ -674,14 +700,14 @@ router.post('/ocr/save', async (req, res) => {
             return res.status(403).json({ error: 'Your current plan does not support the Question Bank. Please upgrade.' });
         }
 
-        const validQuestions: ExtractedQuestion[] = questions.map((q: any, index: number) => {
+        const validQuestions: ExtractedQuestion[] = typedQuestions.map((q, index: number) => {
             if (!q.questionText || !Array.isArray(q.options) || q.options.length < 4) {
                 throw new Error(`Invalid question at index ${index}`);
             }
             return {
                 questionText: String(q.questionText).trim(),
                 options: q.options.slice(0, 4).map(String),
-                correctOption: parseInt(q.correctOption) || 0,
+                correctOption: q.correctOption,
                 imageUrl: q.imageUrl || undefined
             };
         });
@@ -693,14 +719,15 @@ router.post('/ocr/save', async (req, res) => {
             saved: result.saved,
             questions: result.questions
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("OCR save error:", error);
-        res.status(400).json({ error: error.message || "Failed to save questions" });
+        res.status(400).json({ error: error instanceof Error ? error.message : "Failed to save questions" });
     }
-});
+}
 
-router.post('/ocr/extract-and-save', upload.single('image'), async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function extractAndSaveOcr(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     const file = req.file as Express.Multer.File;
 
     if (!file) {
@@ -718,7 +745,7 @@ router.post('/ocr/extract-and-save', upload.single('image'), async (req, res) =>
 
         let imageUrl: string | undefined;
         try {
-            imageUrl = await uploadToCloudinary(file.buffer);
+            imageUrl = await uploadToCloudinary(file.buffer, file.mimetype);
         } catch (e) {
             console.error("Image upload failed, continuing without URL:", e);
         }
@@ -733,7 +760,7 @@ router.post('/ocr/extract-and-save', upload.single('image'), async (req, res) =>
             });
         }
 
-        const questionsWithUrl = result.questions.map(q => ({
+        const questionsWithUrl = result.questions.map((q: ExtractedQuestion) => ({
             ...q,
             imageUrl: imageUrl || undefined
         }));
@@ -746,35 +773,53 @@ router.post('/ocr/extract-and-save', upload.single('image'), async (req, res) =>
             questions: saved.questions,
             errors: result.errors
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("OCR extract and save error:", error);
         res.status(500).json({ error: "Failed to extract and save questions" });
     }
-});
+}
 
 // ==========================================
-// Question Bank Routes
+// Question Bank Controllers
 // ==========================================
 
-// GET /api/teacher/question-bank
-router.get('/question-bank', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function getQuestionBank(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     try {
         const questions = await prisma.bankQuestion.findMany({
             where: { teacherId: teacher.id },
             orderBy: { createdAt: 'desc' }
         });
-        res.json({ questions });
+
+        // Get quiz titles that contain each question
+        const quizIdsWithQuestions = await prisma.question.findMany({
+            where: { quiz: { teacherId: teacher.id } },
+            select: { id: true, questionText: true, quizId: true, quiz: { select: { title: true } } }
+        });
+
+        // Map quiz info to each bank question
+        const questionsWithQuizInfo = questions.map(bq => {
+            const matchingQuizzes = quizIdsWithQuestions.filter(q => 
+                q.questionText === bq.questionText || q.id === bq.id
+            );
+            return {
+                ...bq,
+                quizCount: matchingQuizzes.length,
+                quizTitles: matchingQuizzes.slice(0, 3).map(q => q.quiz.title)
+            };
+        });
+
+        res.json({ questions: questionsWithQuizInfo });
     } catch (error) {
         console.error("Error fetching question bank:", error);
         res.status(500).json({ error: "Error loading question bank" });
     }
-});
+}
 
-// POST /api/teacher/question-bank
-// Saves a single question to the bank
-router.post('/question-bank', async (req, res) => {
-    const teacher = (req as any).teacher;
+export async function saveQuestionToBank(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
     const { questionText, options, correctOption, imageUrl } = req.body;
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
@@ -799,12 +844,12 @@ router.post('/question-bank', async (req, res) => {
         console.error("Error saving to question bank:", error);
         res.status(500).json({ error: "Error saving question" });
     }
-});
+}
 
-// DELETE /api/teacher/question-bank/:id
-router.delete('/question-bank/:id', async (req, res) => {
-    const teacher = (req as any).teacher;
-    const questionId = req.params.id;
+export async function deleteQuestionFromBank(req: Request, res: Response) {
+
+    const teacher = (req as TeacherRequest).teacher;
+    const questionId = String(req.params.id);
     try {
         await prisma.bankQuestion.delete({
             where: { id: questionId, teacherId: teacher.id }
@@ -814,16 +859,17 @@ router.delete('/question-bank/:id', async (req, res) => {
         console.error("Error deleting from question bank:", error);
         res.status(500).json({ error: "Error deleting question" });
     }
-});
+}
 
 // ==========================================
-// Assistants Routes
+// Assistants Controllers
 // ==========================================
 
-// GET /api/teacher/assistants
-router.get('/assistants', async (req, res) => {
-    if ((req as any).isAssistant) return res.status(403).json({ error: 'Forbidden: Assistants cannot manage other assistants' });
-    const teacher = (req as any).teacher;
+export async function getAssistants(req: Request, res: Response) {
+    
+    if ((req as TeacherRequest).isAssistant) return res.status(403).json({ error: 'Forbidden: Assistants cannot manage other assistants' });
+
+    const teacher = (req as TeacherRequest).teacher;
     try {
         const assistants = await prisma.assistant.findMany({
             where: { teacherId: teacher.id },
@@ -834,12 +880,12 @@ router.get('/assistants', async (req, res) => {
         console.error("Error fetching assistants:", error);
         res.status(500).json({ error: "Error loading assistants" });
     }
-});
+}
 
-// POST /api/teacher/assistants
-router.post('/assistants', async (req, res) => {
-    if ((req as any).isAssistant) return res.status(403).json({ error: 'Forbidden: Assistants cannot manage other assistants' });
-    const teacher = (req as any).teacher;
+export async function createAssistant(req: Request, res: Response) {
+    if ((req as TeacherRequest).isAssistant) return res.status(403).json({ error: 'Forbidden: Assistants cannot manage other assistants' });
+
+    const teacher = (req as TeacherRequest).teacher;
     const { name, email, password } = req.body;
     try {
         const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
@@ -853,11 +899,10 @@ router.post('/assistants', async (req, res) => {
 
         const currentCount = await prisma.assistant.count({ where: { teacherId: teacher.id } });
         if (currentCount >= limit) {
-             return res.status(403).json({ error: `You have reached the maximum number of assistants (${limit}) for your plan.` });
+            return res.status(403).json({ error: `You have reached the maximum number of assistants (${limit}) for your plan.` });
         }
 
-        const bcrypt = require('bcrypt');
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const assistant = await prisma.assistant.create({
             data: {
@@ -869,20 +914,20 @@ router.post('/assistants', async (req, res) => {
             select: { id: true, name: true, email: true }
         });
         res.json({ success: true, assistant });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error adding assistant:", error);
-        if (error.code === 'P2002') {
-             return res.status(400).json({ error: "Email already exists" });
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+            return res.status(400).json({ error: "Email already exists" });
         }
         res.status(500).json({ error: "Error adding assistant" });
     }
-});
+}
 
-// DELETE /api/teacher/assistants/:id
-router.delete('/assistants/:id', async (req, res) => {
-    if ((req as any).isAssistant) return res.status(403).json({ error: 'Forbidden: Assistants cannot manage other assistants' });
-    const teacher = (req as any).teacher;
-    const assistantId = req.params.id;
+export async function deleteAssistant(req: Request, res: Response) {
+    if ((req as TeacherRequest).isAssistant) return res.status(403).json({ error: 'Forbidden: Assistants cannot manage other assistants' });
+
+    const teacher = (req as TeacherRequest).teacher;
+    const assistantId = String(req.params.id);
     try {
         await prisma.assistant.delete({
             where: { id: assistantId, teacherId: teacher.id }
@@ -892,6 +937,4 @@ router.delete('/assistants/:id', async (req, res) => {
         console.error("Error deleting assistant:", error);
         res.status(500).json({ error: "Error removing assistant" });
     }
-});
-
-export default router;
+}

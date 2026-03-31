@@ -1,13 +1,13 @@
-import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../../prisma.js';
 import { addOrMoveStudentToClass } from '../../services/class.js';
+import type { Request, Response } from 'express';
+import { config } from '../../config.js';
+import { logger } from '../../utils/logger.js';
 
-const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// POST /api/classes/:id/join
-router.post('/:id/join', async (req, res) => {
+
+export async function joinClass(req: Request, res: Response) {
     const classId = req.params.id;
     const token = req.cookies.token;
 
@@ -16,20 +16,20 @@ router.post('/:id/join', async (req, res) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET) as { id: string, role: string };
-        
+        const decoded = jwt.verify(token, config.jwtSecret) as { id: string, role: string };
+
         if (decoded.role !== 'student') {
             return res.status(403).json({ error: 'Only students can join classes.' });
         }
 
         const student = await prisma.student.findUnique({ where: { id: decoded.id } });
-        
+
         if (!student) {
             return res.status(401).json({ error: 'Student not found' });
         }
 
         const classData = await prisma.class.findUnique({
-            where: { id: classId }
+            where: { id: classId as string }
         });
 
         if (!classData) {
@@ -38,16 +38,14 @@ router.post('/:id/join', async (req, res) => {
 
         // Check if student is already in this class
         if (student.classId === classId) {
-             return res.json({ success: true, message: 'Already a member of this class', student });
+            return res.json({ success: true, message: 'Already a member of this class', student });
         }
 
         const updatedStudent = await addOrMoveStudentToClass(classData.id, classData.name, student.name, student.phone);
 
         res.json({ success: true, student: updatedStudent });
     } catch (error) {
-        console.error("API Join Class error:", error);
+        logger.error(`API Join Class error: ${error}`);
         res.status(500).json({ error: 'Failed to join class' });
     }
-});
-
-export default router;
+}

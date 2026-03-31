@@ -1,0 +1,13 @@
+export const SALT_ROUNDS = 10;
+export const FREE_TRIAL_DAYS = 7;
+export const ITEMS_PER_PAGE = 15;
+export const JWT_EXPIRY = '24h';
+export const REFRESH_TOKEN_EXPIRY = '7d';
+export const PASSWORD_MIN_LENGTH = 6;
+export const MAX_STUDENTS_PER_CLASS = 500;
+export const MAX_QUIZZES = 100;
+export const OCR_TIMEOUT_MS = 60000;
+export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+export const RATE_LIMIT_AUTH_MAX = 5;
+export const RATE_LIMIT_REGISTER_MAX = 10;
+export const RATE_LIMIT_API_MAX = 100;

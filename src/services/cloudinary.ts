@@ -6,9 +6,13 @@ cloudinary.config({
 	api_secret: process.env.CLOUDINARY_SECRET,
 });
 
-export const uploadToCloudinary = (fileBuffer: Buffer): Promise<string> => {
+export const uploadToCloudinary = (fileBuffer: Buffer, mimetype: string = 'image/jpeg'): Promise<string> => {
 	return new Promise((resolve, reject) => {
-		const uploadStream = cloudinary.uploader.upload_stream(
+		const b64 = fileBuffer.toString('base64');
+		const dataUri = `data:${mimetype};base64,${b64}`;
+
+		cloudinary.uploader.upload(
+			dataUri,
 			{
 				folder: 'quizzes',
 				resource_type: 'auto',
@@ -19,8 +23,6 @@ export const uploadToCloudinary = (fileBuffer: Buffer): Promise<string> => {
 				else reject(new Error('Cloudinary upload failed with no result'));
 			}
 		);
-
-		uploadStream.end(fileBuffer);
 	});
 };
 
