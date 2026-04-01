@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { seededShuffle } from "../../utils/shuffle.js";
 import type { Prisma } from "@prisma/client";
 import prisma from '../../prisma.js';
+import { getActiveSubscriptionForTeacher, getPlanLimits } from "../../services/subscription.js";
 
 
 export async function getStudentDashboard(req: Request, res: Response) {
@@ -244,11 +245,15 @@ export async function TakeQuiz(req: Request, res: Response) {
             select: { name: true, phone: true }
         });
 
+        const activeSubscription = await getActiveSubscriptionForTeacher(quiz.teacherId);
+        const antiCheatLevel = getPlanLimits(activeSubscription?.tier ?? "FREE_TRIAL").antiCheat;
+
         res.json({
             quiz: { ...quiz, questions: questionsWithOptions },
             submission: currentSubmission,
             savedAnswers: parsedAnswers,
-            studentInfo: studentRecord ? { name: studentRecord.name, phone: studentRecord.phone } : undefined
+            studentInfo: studentRecord ? { name: studentRecord.name, phone: studentRecord.phone } : undefined,
+            antiCheatLevel,
         });
     } catch (error) {
         console.error("Error loading quiz test:", error);
