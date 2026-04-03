@@ -25,6 +25,13 @@ const generateShortCodeForClass = (classId: string): string => {
     }
 };
 
+const generateEgyptianPhone = (): string => {
+    const prefixes = ["010", "011", "012", "015"];
+    const prefix = faker.helpers.arrayElement(prefixes);
+    const number = faker.string.numeric(8);
+    return prefix + number;
+};
+
 async function main() {
     console.log("🌱 Seeding database...");
 
@@ -34,6 +41,8 @@ async function main() {
     await prisma.submission.deleteMany();
     await prisma.question.deleteMany();
     await prisma.quiz.deleteMany();
+    await prisma.bankQuestion.deleteMany();
+    await prisma.assistant.deleteMany();
     await prisma.class.deleteMany();
     await prisma.student.deleteMany();
     await prisma.teacher.deleteMany();
@@ -47,7 +56,7 @@ async function main() {
                     email: faker.internet.email().toLowerCase(),
                     password: HASHED_PASSWORD,
                     name: faker.person.fullName(),
-                    phone: faker.phone.number({ style: "international" }),
+                    phone: generateEgyptianPhone(),
                 },
             })
         )
@@ -86,9 +95,15 @@ async function main() {
     for (let i = 0; i < studentCount; i++) {
         let phone: string;
         do {
-            phone = faker.phone.number({ style: "international" });
+            phone = generateEgyptianPhone();
         } while (usedPhones.has(phone));
         usedPhones.add(phone);
+
+        let parentPhone: string;
+        do {
+            parentPhone = generateEgyptianPhone();
+        } while (parentPhone === phone || usedPhones.has(parentPhone));
+        usedPhones.add(parentPhone);
 
         const classForStudent = faker.helpers.arrayElement(allClasses);
         const student = await prisma.student.create({
@@ -96,7 +111,7 @@ async function main() {
                 name: faker.person.fullName(),
                 phone,
                 password: HASHED_PASSWORD,
-                parentPhone: faker.phone.number({ style: "international" }),
+                parentPhone,
                 classId: classForStudent.id,
                 shortCode: generateShortCodeForClass(classForStudent.id),
             },
@@ -222,7 +237,7 @@ async function main() {
             email: "teacher@test.com",
             password: HASHED_PASSWORD,
             name: "Test Teacher",
-            phone: "+15550000001",
+            phone: "01012345678",
         },
     });
 
@@ -237,9 +252,9 @@ async function main() {
     const _testStudent = await prisma.student.create({
         data: {
             name: "Test Student",
-            phone: "+15550000002",
+            phone: "01012345679",
             password: HASHED_PASSWORD,
-            parentPhone: "+15550000003",
+            parentPhone: "01012345680",
             classId: testClass.id,
             shortCode: generateShortCodeForClass(testClass.id),
         },
@@ -299,7 +314,7 @@ async function main() {
     console.log("\n✅ Seeding complete!");
     console.log("\nTest login credentials (password: password123):");
     console.log("  Teacher: teacher@test.com");
-    console.log("  Student: +15550000002");
+    console.log("  Student: 01012345679");
     console.log("  Admin:   admin@test.com");
 }
 
