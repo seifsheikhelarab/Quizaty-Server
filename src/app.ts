@@ -5,6 +5,8 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import cors from 'cors';
 import router from './api/index.js';
+import adminRouter from './routes/admin.js';
+import adminAuthRouter from './routes/admin-auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { config } from './config.js';
 import httpLogger from './utils/logger.js';
@@ -48,6 +50,8 @@ app.set('layout', path.join(process.cwd(), 'views/layouts/main'));
 
 // Routes
 app.use('/', router);
+app.use("/admin",adminRouter);
+app.use("/auth/admin", adminAuthRouter);
 
 // Error Handling Middleware
 app.use(errorHandler);
