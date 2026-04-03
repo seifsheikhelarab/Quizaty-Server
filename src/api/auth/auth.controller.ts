@@ -123,6 +123,11 @@ export async function register(req: Request, res: Response) {
 		let user;
 
 		if (role === 'teacher') {
+			const existingTeacher = await prisma.teacher.findUnique({ where: { email: email! } });
+			if (existingTeacher) {
+				return res.status(400).json({ error: 'هذا البريد الإلكتروني مسجل بالفعل.' });
+			}
+
 			user = await prisma.$transaction(async (tx) => {
 				const newTeacher = await tx.teacher.create({
 					data: { email: email!, password: hashedPassword, name: name || '', phone: phone || '' }
@@ -151,7 +156,7 @@ export async function register(req: Request, res: Response) {
 
 			if (user) {
 				if (user.password) {
-					return res.status(400).json({ error: 'An account with this phone number already exists.' });
+					return res.status(400).json({ error: 'هذا الرقم مسجل بالفعل.' });
 				}
 				user = await prisma.student.update({
 					where: { id: user.id },
