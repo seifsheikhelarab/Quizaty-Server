@@ -6,6 +6,10 @@ import { getActiveSubscriptionForTeacher, checkStudentLimit, getPlanLimits, type
 export async function getClasses(req: Request, res: Response) {
     const teacher = (req as TeacherRequest).teacher;
     try {
+        const activeSubscription = await getActiveSubscriptionForTeacher(teacher.id);
+        const tier = (activeSubscription ? activeSubscription.tier : 'FREE_TRIAL') as SubscriptionTier;
+        const limits = getPlanLimits(tier);
+
         const classes = await prisma.class.findMany({
             where: { teacherId: teacher.id },
             include: {
@@ -13,7 +17,7 @@ export async function getClasses(req: Request, res: Response) {
             },
             orderBy: { createdAt: 'desc' }
         });
-        res.json({ classes });
+        res.json({ classes, limits });
     } catch (error) {
         console.error("Error fetching classes:", error);
         res.status(500).json({ error: "Error loading classes" });
