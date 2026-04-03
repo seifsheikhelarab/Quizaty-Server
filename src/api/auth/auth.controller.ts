@@ -177,6 +177,10 @@ export async function register(req: Request, res: Response) {
 }
 
 export function logout(req: Request, res: Response) {
-	res.clearCookie('token');
+	res.clearCookie('token', {
+		httpOnly: true,
+		sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
+		secure: config.nodeEnv === 'production',
+	});
 	res.json({ success: true });
 }
