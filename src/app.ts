@@ -8,7 +8,6 @@ import router from './api/index.js';
 import adminRouter from './routes/admin.js';
 import adminAuthRouter from './routes/admin-auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { config } from './config.js';
 import httpLogger from './utils/logger.js';
 
 const app = express();
@@ -16,9 +15,7 @@ const app = express();
 // Security & Middleware
 app.use(cors({
     origin: "*"
-    },
-    credentials: true
-}));
+    }));
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
