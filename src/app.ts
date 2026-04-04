@@ -15,12 +15,7 @@ const app = express();
 
 // Security & Middleware
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || origin === config.clientUrl || origin.endsWith('.vercel.app')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+    origin: "*"
     },
     credentials: true
 }));
