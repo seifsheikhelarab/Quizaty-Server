@@ -14,8 +14,9 @@ const app = express();
 
 // Security & Middleware
 app.use(cors({
-    origin: "*"
-    }));
+    origin: [process.env.CLIENT_URL_PROD!, process.env.CLIENT_URL_TEST!],
+    credentials: true,
+}));
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -42,7 +43,7 @@ app.set('layout', path.join(process.cwd(), 'views/layouts/main'));
 
 // Routes
 app.use('/', router);
-app.use("/admin",adminRouter);
+app.use("/admin", adminRouter);
 app.use("/auth/admin", adminAuthRouter);
 
 // Error Handling Middleware
