@@ -54,7 +54,7 @@ router.get('/dashboard', async (req, res) => {
     }
 });
 
-router.get('/studentRaws', async (req, res) => {
+router.get('/students', async (req, res) => {
     const admin = (req as unknown as AdminRequest).admin;
     const page = parseInt(req.query.page as string) || 1;
     const q = (req.query.q as string || '').trim();
@@ -67,7 +67,7 @@ router.get('/studentRaws', async (req, res) => {
             ]
         } : {};
 
-        const [studentRaws, total] = await Promise.all([
+        const [students, total] = await Promise.all([
             prisma.student.findMany({
                 where,
                 include: { class: true },
@@ -80,14 +80,14 @@ router.get('/studentRaws', async (req, res) => {
 
         const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
-        res.render('admin/studentRaws', {
+        res.render('admin/students', {
             title: 'الطلاب',
-            admin, studentRaws, page, totalPages, total, q,
+            admin, students, page, totalPages, total, q,
             layout: false
         });
     } catch (error) {
-        console.error("Admin studentRaws error:", error);
-        res.status(500).send("Error loading studentRaws");
+        console.error("Admin students error:", error);
+        res.status(500).send("Error loading students");
     }
 });
 

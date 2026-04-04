@@ -21,7 +21,7 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"], // Required for Alpine.js
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://vercel.live"], // Required for Alpine.js + Vercel feedback
             styleSrc: ["'self'", "'unsafe-inline'"],  // Required for inline styles
             imgSrc: ["'self'", 'data:', 'https:'],    // Allow data URLs and HTTPS images
             fontSrc: ["'self'"],
