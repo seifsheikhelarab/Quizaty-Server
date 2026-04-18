@@ -12,6 +12,9 @@ import httpLogger from './utils/logger.js';
 
 const app = express();
 
+// Trust proxy for Vercel (required for express-rate-limit)
+app.set('trust proxy', 1);
+
 // Security & Middleware
 app.use(cors({
     origin: [process.env.CLIENT_URL_PROD!, process.env.CLIENT_URL_TEST!],
