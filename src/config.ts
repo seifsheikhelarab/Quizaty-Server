@@ -21,7 +21,6 @@ if (!parsed.success) {
 export const config = {
     jwtSecret: parsed.data.JWT_SECRET,
     databaseUrl: parsed.data.DATABASE_URL,
-    clientUrl: parsed.data.CLIENT_URL,
     nodeEnv: parsed.data.NODE_ENV,
     port: parsed.data.PORT,
     cloudinary: parsed.data.CLOUDINARY_CLOUD_NAME ? {
